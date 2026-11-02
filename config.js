@@ -10,6 +10,33 @@ const SITE = {
 };
 
 /*
+ * LINE公式アカウント
+ * - id: ベーシックID（@から始まるID。例: '@123abcde'）
+ * - addFriendUrl: 友だち追加URL（例: 'https://lin.ee/xxxxxxx'）
+ * 未設定の間はボタンを押すと「準備中」と表示されます。
+ */
+const LINE = {
+  id: '',
+  addFriendUrl: '',
+};
+
+/*
+ * 有料会員プラン
+ * - joinUrl: 申し込み先（Stripe の決済リンクなど）。空なら LINE で申し込みメッセージを送る形になります。
+ */
+const MEMBERSHIP = {
+  name: 'サブスク見直しプレミアム',
+  price: 980,
+  features: [
+    'LINEでいつでも相談し放題',
+    '月1回のWeb個別相談（30分）',
+    '解約・見直し時期をLINEでお知らせ',
+    'あなた専用の見直しプランを作成',
+  ],
+  joinUrl: '',
+};
+
+/*
  * サービスごとのアフィリエイトリンク
  * key は data.js のサービス id。空や未設定ならボタンは出ません。
  * 例: netflix: 'https://px.a8.net/svt/ejp?a8mat=xxxx'

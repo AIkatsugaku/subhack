@@ -123,7 +123,12 @@ main { max-width: var(--w); margin: 0 auto; padding: 0 16px; }
   width: 26px; height: 26px; border-radius: 6px; display: grid; place-items: center; flex-shrink: 0;
   color: #fff; font-weight: 900; font-size: 10px; line-height: 1; letter-spacing: -.02em; overflow: hidden;
 }
+.ico { position: relative; }
 .ico img { width: 100%; height: 100%; object-fit: cover; }
+/* 公式アイコン：読み込めたら白地に表示 */
+.ico img.fav { position: absolute; inset: 0; object-fit: contain; padding: 6%; background: #fff; opacity: 0; transition: opacity .2s; }
+.ico.has-img { box-shadow: inset 0 0 0 1px #e1e6ed; }
+.ico.has-img img.fav { opacity: 1; }
 .ico.sm { font-size: 8px; }
 .tname { font-size: 10px; line-height: 1.2; color: #3a4554; white-space: pre-line; word-break: break-all; }
 .tprice { font-size: 9px; color: var(--ok); font-weight: 700; line-height: 1; }
@@ -311,3 +316,59 @@ details p, details .ptable { padding: 0 14px 12px; margin: 0; }
   .badge-round b { font-size: 17px; }
   .card-total b { font-size: 34px; }
 }
+
+/* 見直しレポート */
+.rp h3 { font-size: 17px; }
+.rp-sum { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 6px; }
+.rp-sum div { background: linear-gradient(135deg, #eaf7ef, #f3fbf6); border-radius: 10px; padding: 12px; text-align: center; }
+.rp-sum div:last-child { background: linear-gradient(135deg, #fff4e6, #fffaf2); }
+.rp-sum small { display: block; font-size: 11px; color: var(--sub); }
+.rp-sum b { font-size: 20px; color: var(--ok); font-variant-numeric: tabular-nums; }
+.rp-sum div:last-child b { color: var(--pr); }
+.rp-sec { border-top: 1px solid var(--line); margin-top: 16px; padding-top: 14px; }
+.rp-sec h4 { margin: 0 0 6px; font-size: 15px; color: var(--navy); display: flex; align-items: center; gap: 6px; }
+.rp-now { margin: 0 0 8px; font-size: 12px; color: var(--sub); }
+.rp-now b { color: var(--navy); font-size: 15px; }
+.rp-text { margin: 0; font-size: 13px; color: #3a4554; }
+.rp-opt { display: flex; align-items: center; gap: 10px; padding: 10px 0 0; }
+.rp-opt .ico { width: 36px; height: 36px; border-radius: 8px; font-size: 11px; }
+.rp-main { flex: 1; min-width: 0; }
+.rp-main b { display: block; font-size: 14px; color: var(--ink); }
+.rp-main small { display: block; font-size: 11px; color: var(--sub); line-height: 1.4; }
+.rp-tag { display: inline-block; margin-top: 3px; font-size: 10px; font-weight: 700; color: var(--accent); background: #e8f0fd; border-radius: 4px; padding: 1px 6px; }
+.rp-best { display: inline-block; font-size: 10px; color: #fff; background: var(--pr); border-radius: 4px; padding: 0 6px; margin-right: 6px; vertical-align: 2px; }
+.rp-price { text-align: right; font-weight: 900; color: var(--navy); font-size: 15px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.rp-price small { font-size: 10px; font-weight: 400; color: var(--sub); }
+.rp-price em { display: block; font-style: normal; font-size: 12px; color: var(--ok); font-weight: 700; }
+.rp-btn { height: 40px; font-size: 13px; margin-top: 8px; }
+.rp-goto { height: 42px; font-size: 13px; }
+.rp-note { margin: 10px 0 0; font-size: 11px; color: var(--sub); }
+.rp-note b { color: var(--ok); }
+.rp-alert { background: #fff4e6; color: #8a4b0b; font-size: 12px; border-radius: 8px; padding: 10px 12px; margin-bottom: 4px; }
+.rp-tier { display: block; font-size: 10px; color: var(--sub); font-weight: 700; }
+
+/* 通知・相談・有料会員 */
+.mb-lead { margin: -4px 0 10px; font-size: 12px; color: var(--sub); }
+.mb-list { border-top: 1px solid var(--line); }
+.mb-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.mb-row .ico { width: 28px; height: 28px; }
+.mb-name { flex: 1; min-width: 90px; }
+.mb-name b { display: block; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mb-name small { font-size: 11px; color: var(--sub); }
+.mb-type, .mb-date { height: 34px; border: 1px solid var(--line); border-radius: 8px; padding: 0 6px; font: inherit; font-size: 12px; background: #fff; color: var(--ink); }
+.mb-date { width: 132px; }
+.mb-count { font-size: 12px; color: var(--accent); font-weight: 700; margin: 8px 0 0; }
+.mb-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.mb-btns .btn { font-size: 13px; }
+.btn.line { background: #06C755; }
+.btn.line-add { color: #06A847; border-color: #bfe9cf; font-size: 13px; height: 42px; }
+.btn.big { height: 52px; font-size: 15px; }
+.premium { margin-top: 14px; border: 2px solid #f1d77a; border-radius: 12px; padding: 14px; background: linear-gradient(160deg, #fffdf3, #fff); }
+.premium-head { display: flex; align-items: center; gap: 8px; }
+.premium-head b { font-size: 15px; color: var(--navy); }
+.premium-badge { font-size: 10px; font-weight: 700; color: #7a5a00; background: #f6e3a1; border-radius: 4px; padding: 1px 6px; }
+.premium-price { margin-top: 6px; font-size: 12px; color: var(--sub); }
+.premium-price b { font-size: 24px; color: var(--navy); font-weight: 900; }
+.premium ul { margin: 8px 0 0; padding: 0; list-style: none; }
+.premium li { position: relative; padding: 4px 0 4px 22px; font-size: 13px; }
+.premium li::before { content: "✓"; position: absolute; left: 0; color: var(--ok); font-weight: 900; }

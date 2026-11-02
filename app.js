@@ -35,15 +35,21 @@
   // ---------- アイコン ----------
   function iconOf(it) {
     const s = SVC[it.sid];
-    if (s) return { c: s.c, t: s.t ?? flat(s.n).slice(0, 1), img: s.img };
+    if (s) return { c: s.c, t: s.t ?? flat(s.n).slice(0, 1), img: s.img || (ICON_DOMAINS[s.id] && iconUrl(ICON_DOMAINS[s.id])) };
     return { c: it.color || '#64748B', t: (it.name || '?').slice(0, 1) };
   }
+  // 公式アイコンを重ねて表示し、読み込めなければ文字アイコンのまま
   function icoHTML(ic, extra = '') {
-    if (ic.img) return `<span class="ico ${extra}" style="background:${ic.c}"><img src="${esc(ic.img)}" alt=""></span>`;
     const t = ic.t || '';
     const small = [...t].length >= 3 ? ' sm' : '';
-    return `<span class="ico${small} ${extra}" style="background:${ic.c}">${esc(t)}</span>`;
+    const img = ic.img ? `<img class="fav" src="${esc(ic.img)}" alt="" loading="lazy" onload="icoLoaded(this)" onerror="this.remove()">` : '';
+    return `<span class="ico${small} ${extra}" style="background:${ic.c}">${esc(t)}${img}</span>`;
   }
+  // アイコン取得先は不明なドメインに 16px の既定アイコンを返すので、それは使わない
+  window.icoLoaded = img => {
+    if (img.naturalWidth <= 16) img.remove();
+    else img.parentElement.classList.add('has-img');
+  };
 
   // ---------- カタログ描画 ----------
   function renderCatalog() {
@@ -396,6 +402,9 @@
         ${sorted.slice(0, 5).map(i => `<div class="li">${icoHTML(iconOf(i))}<div class="lt"><b>${esc(i.label || i.name || flat(SVC[i.sid]?.n || ''))}</b><small>${esc(i.plan)}</small></div><span class="lp">¥${yen(i.price)}</span></div>`).join('')}
       </div>
 
+      ${buildReport({ items, SVC, icoHTML, iconOf, yen, esc })}
+      ${buildMember({ items, SVC, yen, esc, icoHTML, iconOf })}
+
       ${recs.length ? `<div class="panel">
         <h3>見直しで安くなるかも</h3>
         ${recs.map(r => `<div class="rec"><span class="tag">${esc(r.tag)}・PR</span><h4>${esc(r.title)}</h4><p>${esc(r.text)}</p>
@@ -414,6 +423,8 @@
     };
     $('#saveImg').onclick = saveImage;
     $('#editList').onclick = () => { closeResult(); openList(); };
+    $$('[data-goto]', $('#resultBody')).forEach(b => b.onclick = () => { closeResult(); jump(b.dataset.goto); });
+    bindMember($('#resultBody'), { getItems: () => items, save, yen, SVC, toast });
   }
 
   // 登録中サービスのうちアフィリエイトURLがあるもの
@@ -455,9 +466,22 @@
       ctx.font = `900 ${len >= 4 ? 30 : len === 3 ? 36 : 48}px ${font}`;
       ctx.fillText(text, x + size / 2, y + size / 2 + 2);
     };
+    // 公式アイコンは CORS で読めたものだけ描く（読めなければ文字アイコン）
+    const loadImg = src => new Promise(res => {
+      if (!src) return res(null);
+      const im = new Image(); im.crossOrigin = 'anonymous';
+      im.onload = () => res(im.naturalWidth > 16 ? im : null); im.onerror = () => res(null);
+      im.src = src;
+    });
+    const imgs = await Promise.all(shown.map(it => loadImg(iconOf(it).img)));
     shown.forEach((it, k) => {
       const ic = iconOf(it);
-      drawTile(pad + (k % cols) * (size + gap), top + Math.floor(k / cols) * (size + gap), ic.c, ic.t || '');
+      const x = pad + (k % cols) * (size + gap), y = top + Math.floor(k / cols) * (size + gap);
+      if (imgs[k]) {
+        ctx.fillStyle = '#fff'; roundRect(ctx, x, y, size, size, 26); ctx.fill();
+        const p = size * .14;
+        ctx.drawImage(imgs[k], x + p, y + p, size - p * 2, size - p * 2);
+      } else drawTile(x, y, ic.c, ic.t || '');
     });
     if (sorted.length > shown.length) {
       const k = shown.length;
