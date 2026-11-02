@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="admin.css?v=202611021828">
+<link rel="stylesheet" href="admin.css?v=202611021846">
 </head>
 <body>
 
@@ -28,9 +28,9 @@
       <summary>トークンの作り方</summary>
       <ol>
         <li>GitHub にログインし、<a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Fine-grained token の作成画面</a>を開く</li>
-        <li>「Repository access」で <b id="repoName1"></b> だけを選ぶ</li>
-        <li>「Repository permissions」の <b>Contents</b> を <b>Read and write</b> にする<br><span class="muted">※最初は「Read-only」になっているので必ず変更してください。Read-only のままだと保存できません</span></li>
-        <li>作成されたトークン（github_pat_…）をここに貼り付ける</li>
+        <li>「Repository access」で <b>Only select repositories</b> を選び、<b id="repoName1"></b> を選ぶ<br><span class="muted">※「Public repositories」のままだと読み取り専用になり、保存できません</span></li>
+        <li>「Permissions」の <b>Repositories</b> の箱で「＋ Add permissions」→ <b>Contents</b> を追加し、右側を <b>Read and write</b> にする<br><span class="muted">※「Account」の箱ではありません。追加直後は「Read-only」なので必ず切り替えてください</span></li>
+        <li>「Generate token」（作り直す場合は「Update」）を押し、トークン（github_pat_…）をここに貼り付ける</li>
       </ol>
       <p class="muted">本部のスタッフごとにトークンを分けておくと、誰が変更したか履歴でわかります。</p>
     </details>
@@ -71,10 +71,10 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=202611021828"></script>
-<script src="data.js?v=202611021828"></script>
-<script src="icons.js?v=202611021828"></script>
-<script src="report-config.js?v=202611021828"></script>
-<script src="admin.js?v=202611021828"></script>
+<script src="config.js?v=202611021846"></script>
+<script src="data.js?v=202611021846"></script>
+<script src="icons.js?v=202611021846"></script>
+<script src="report-config.js?v=202611021846"></script>
+<script src="admin.js?v=202611021846"></script>
 </body>
 </html>

@@ -57,8 +57,10 @@
 
   const TOKEN_PAGE = 'https://github.com/settings/personal-access-tokens';
   const FIX_PERMISSION = `<b>このトークンには「保存」の権限がありません。</b><br>
-    <a href="${TOKEN_PAGE}" target="_blank" rel="noopener">GitHub のトークン一覧</a>で使っているトークンを開き、
-    「Repository permissions」の <b>Contents</b> を <b>Read and write</b> に変えて「Update」を押してください。
+    <a href="${TOKEN_PAGE}" target="_blank" rel="noopener">GitHub のトークン一覧</a>で使っているトークンを開き、<br>
+    ① 「Repository access」を <b>Only select repositories</b> にして <b>${REPO}</b> を選ぶ<br>
+    ② 「Permissions」の <b>Repositories</b> の箱で「＋ Add permissions」→ <b>Contents</b> を <b>Read and write</b> にする<br>
+    ③ 「Update」を押す<br>
     トークンの文字列は変わらないので、そのまま もう一度ログインすれば使えます。`;
 
   // GitHub のエラーを、何をすればいいかが分かる日本語にする
