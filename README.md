@@ -84,3 +84,11 @@
 - ログインには GitHub の Fine-grained token（対象: このリポジトリだけ / Permissions → Contents: Read and write）を使います
 - 変更履歴は GitHub の `settings.json` の履歴で確認・復元できます
 - `config.js` / `report-config.js` は初期値です。`settings.json` にある項目はそちらが優先されます
+
+## 明細スクショの読み取り（scan.js）
+
+「カード明細のスクショで自動入力」から画像を選ぶと、ブラウザ内の文字認識（Tesseract.js）で読み取り、サービス名と金額を見つけます。画像は外部に送信されません。
+
+- 明細での表記（例：NETFLIX.COM、GOOGLE*YOUTUBE、KDDI）は `scan.js` の `STATEMENT_KEYS` で追加できます
+- App Store など中身が特定できない決済は `STATEMENT_GENERIC` で名前つきの項目として追加します
+- 半角カナの小さい文字は読み取り精度が下がることがあります

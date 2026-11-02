@@ -600,4 +600,8 @@
   renderPrices();
   refresh();
   watchChips();
+
+  // カード明細のスクショ読み取り
+  const scanner = initScan({ SVC, CAT, getItems: () => items, refresh, openSheet, closeSheet, icoHTML, iconOf, yen, esc, toast, uid, flat });
+  $('#btnScan').onclick = () => { scanner.open(); hideGuide(); };
 })();
