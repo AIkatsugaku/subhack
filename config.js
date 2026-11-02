@@ -26,7 +26,7 @@ const LINE = {
  */
 const MEMBERSHIP = {
   name: 'サブスク見直しプレミアム',
-  price: 980,
+  price: 400,
   features: [
     'LINEでいつでも相談し放題',
     '月1回のWeb個別相談（30分）',
