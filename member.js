@@ -69,6 +69,14 @@ function bindMember(root, { getItems, save, yen, SVC, toast }) {
   const fmt = d => d.replace(/-/g, '/');
   const openUrl = url => window.open(url, '_blank', 'noopener');
   const needLine = () => { toast('LINE公式アカウントは準備中です'); };
+  // スマホならLINEアプリで直接開く。パソコンでは line.me/R/… が開けないので、QRコードとコピーで案内する
+  const isPhone = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && /Macintosh/.test(navigator.userAgent));
+  const sendLine = text => {
+    const url = lineMessageUrl(text);
+    if (!url) return needLine();
+    if (isPhone) return openUrl(url);
+    showLineOnPc(url, text);
+  };
 
   const updateCount = () => {
     const n = reminders().length;
@@ -129,8 +137,7 @@ function bindMember(root, { getItems, save, yen, SVC, toast }) {
     const list = reminders();
     if (!list.length) { toast('通知したいサービスに日付を入れてください'); return; }
     const text = ['【通知の登録】', ...list.map(i => `・${fmt(i.remind.date)} ${nameOf(i)}（¥${yen(i.price)}/月）を${REMIND_TYPES[i.remind.type]}`), '', 'この日が近づいたら教えてください。'].join('\n');
-    const url = lineMessageUrl(text);
-    url ? openUrl(url) : needLine();
+    sendLine(text);
   };
 
   root.querySelector('#mbAdd').onclick = () => (LINE.addFriendUrl ? openUrl(LINE.addFriendUrl) : needLine());
@@ -147,14 +154,58 @@ function bindMember(root, { getItems, save, yen, SVC, toast }) {
       '',
       '相談したいこと：',
     ].filter(l => l !== '').join('\n');
-    const url = lineMessageUrl(text);
-    url ? openUrl(url) : needLine();
+    sendLine(text);
   };
 
   // 有料会員
   root.querySelector('#mbJoin').onclick = () => {
     if (MEMBERSHIP.joinUrl) return openUrl(MEMBERSHIP.joinUrl);
-    const url = lineMessageUrl(`【有料会員の申し込み】\n${MEMBERSHIP.name}（月額¥${yen(MEMBERSHIP.price)}）に申し込みたいです。`);
-    url ? openUrl(url) : needLine();
+    sendLine(`【有料会員の申し込み】\n${MEMBERSHIP.name}（月額¥${yen(MEMBERSHIP.price)}）に申し込みたいです。`);
   };
+}
+
+// ---------- パソコンで見ているとき：スマホで読み取るQRコードとメッセージのコピー ----------
+const QR_LIB = 'https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js';
+function loadQrLib() {
+  if (window.qrcode) return Promise.resolve();
+  return new Promise((res, rej) => {
+    const sc = document.createElement('script');
+    sc.src = QR_LIB; sc.onload = res; sc.onerror = rej;
+    document.head.appendChild(sc);
+  });
+}
+
+async function showLineOnPc(url, text) {
+  document.querySelector('.line-pc')?.remove();
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const box = document.createElement('div');
+  box.className = 'line-pc';
+  box.innerHTML = `<div class="line-pc-card" role="dialog" aria-modal="true">
+      <button class="line-pc-close" type="button" aria-label="閉じる">×</button>
+      <h3>スマホのLINEで送ってください</h3>
+      <p>パソコンではLINEのトーク画面を開けません。スマホのカメラでQRコードを読み取ると、メッセージが入力された状態でLINEが開きます。</p>
+      <div class="line-pc-qr" id="linePcQr"><span>QRコードを作成中…</span></div>
+      <p class="line-pc-sub">または、メッセージをコピーして <b>${esc(LINE.id)}</b> のトークに貼り付けてください。</p>
+      <textarea readonly>${esc(text)}</textarea>
+      <div class="line-pc-btns">
+        <button class="btn" type="button" data-copy>メッセージをコピー</button>
+        ${LINE.addFriendUrl ? `<a class="btn line" href="${esc(LINE.addFriendUrl)}" target="_blank" rel="noopener">友だち追加ページを開く</a>` : ''}
+      </div>
+    </div>`;
+  document.body.appendChild(box);
+  box.addEventListener('click', e => { if (e.target === box || e.target.closest('.line-pc-close')) box.remove(); });
+  box.querySelector('[data-copy]').onclick = async e => {
+    try { await navigator.clipboard.writeText(text); }
+    catch { box.querySelector('textarea').select(); document.execCommand('copy'); }
+    e.target.textContent = 'コピーしました';
+  };
+  try {
+    await loadQrLib();
+    const qr = qrcode(0, 'L');
+    qr.addData(url);
+    qr.make();
+    box.querySelector('#linePcQr').innerHTML = qr.createSvgTag({ cellSize: 4, margin: 2, scalable: true });
+  } catch {
+    box.querySelector('#linePcQr').innerHTML = '<span>QRコードを作れませんでした。メッセージをコピーしてお使いください。</span>';
+  }
 }
