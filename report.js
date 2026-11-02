@@ -116,8 +116,8 @@ function buildReport({ items, SVC, icoHTML, iconOf, yen, esc }) {
   // ---------- クレジットカード ----------
   {
     // カードで払えない・払わないことが多い固定費は除く
-    const NOT_CARD = new Set(['rent', 'mortgage', 'scholarship', 'loan', 'invest', 'allowance', 'daycare', 'kanri']);
-    const monthly = sumOf(items.filter(i => !NOT_CARD.has(i.sid)));
+    const NOT_CARD = new Set(['rent', 'allowance', 'daycare', 'kanri', 'invest', 'ideco', 'tsumitate']);
+    const monthly = sumOf(items.filter(i => !NOT_CARD.has(i.sid) && i.cat !== 'loan'));
     const fee = sumOf(items.filter(i => i.sid === 'annualfee'));
     const cards = REPORT.cards
       .map(c => ({ ...c, match: (c.set || []).filter(has), pt: Math.round(monthly * 12 * c.rate) }))

@@ -69,7 +69,7 @@ const RECOMMEND_RULES = {
   net: { label: '光回線が月5,000円以上', when: s => s.cat('net') >= 5000 },
   video: { label: '動画が月3,000円以上', when: s => s.cat('video') >= 3000 },
   kakeibo: { label: '合計が月1万円以上', when: s => s.total >= 10000 },
-  insurance: { label: '保険を登録している', when: s => s.has('insurance') },
+  insurance: { label: '保険を登録している', when: s => s.cat('hoken') > 0 },
   always: { label: '全員に表示', when: () => true },
 };
 

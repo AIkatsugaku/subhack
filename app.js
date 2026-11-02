@@ -20,6 +20,8 @@
 
   // ---------- 状態 ----------
   let items = load();
+  // カテゴリを移したサービスも、今のカテゴリで集計する
+  items.forEach(i => { if (SVC[i.sid]) i.cat = SVC[i.sid].cat; });
 
   function load() {
     try { return JSON.parse(localStorage.getItem(STORE_KEY)) || []; } catch { return []; }
@@ -53,7 +55,7 @@
 
   // ---------- カタログ描画 ----------
   // 見直し効果の大きい通信費から並べる
-  const ORDER = ['mobile', 'net', 'video', 'music', 'ai', 'book', 'game', 'cloud', 'tool', 'learn', 'gym', 'money', 'shop', 'oshi', 'fixed'];
+  const ORDER = ['mobile', 'net', 'video', 'music', 'ai', 'book', 'game', 'cloud', 'tool', 'learn', 'gym', 'money', 'shop', 'oshi', 'fixed', 'hoken', 'loan', 'tax'];
   const CATS = [...ORDER.map(id => CAT[id]).filter(Boolean), ...CATEGORIES.filter(c => !ORDER.includes(c.id))];
   // 「家族が払っている」などの0円プランは除いた最安値
   const minPrice = s => {
