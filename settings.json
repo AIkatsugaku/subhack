@@ -1,0 +1,450 @@
+{
+  "updatedAt": "",
+  "SITE": {
+    "name": "サブハック",
+    "url": "https://aikatsugaku.github.io/subhack/",
+    "hashtag": "サブハック",
+    "xAccount": ""
+  },
+  "LINE": {
+    "id": "",
+    "addFriendUrl": ""
+  },
+  "MEMBERSHIP": {
+    "name": "サブハック プレミアム",
+    "price": 400,
+    "features": [
+      "LINEでいつでも・何度でも相談できる",
+      "月1回のWeb個別相談（30分）",
+      "あなた専用の見直しプランを作成"
+    ],
+    "joinUrl": ""
+  },
+  "AFFILIATE": {},
+  "RECOMMENDS": [
+    {
+      "id": "mobile",
+      "tag": "スマホ代",
+      "title": "スマホ代、格安プランで月数千円下がるかも",
+      "text": "大手キャリアの料金なら、格安SIMへの乗り換えで年間数万円の節約になることがあります。",
+      "cta": "格安SIMを比べる",
+      "url": ""
+    },
+    {
+      "id": "net",
+      "tag": "ネット回線",
+      "title": "光回線のキャッシュバックを見逃していませんか？",
+      "text": "乗り換えキャンペーンで実質料金が大きく下がるケースがあります。",
+      "cta": "光回線キャンペーンを見る",
+      "url": ""
+    },
+    {
+      "id": "video",
+      "tag": "動画",
+      "title": "動画サブスク、まとめると安くなるかも",
+      "text": "セットプランや無料体験を使えば、見たい作品だけ効率よく見られます。",
+      "cta": "無料体験できる動画サービス",
+      "url": ""
+    },
+    {
+      "id": "kakeibo",
+      "tag": "家計",
+      "title": "固定費を自動で見える化しよう",
+      "text": "家計簿アプリならカード明細から使っていないサブスクを見つけやすくなります。",
+      "cta": "家計簿アプリを見る",
+      "url": ""
+    },
+    {
+      "id": "insurance",
+      "tag": "保険",
+      "title": "保険の無料相談で毎月の保険料を見直す",
+      "text": "プロに相談するだけで、保障はそのまま保険料が下がることも。",
+      "cta": "無料相談を予約する",
+      "url": ""
+    },
+    {
+      "id": "always",
+      "tag": "ポイ活",
+      "title": "ポイ活で、サブスク代を取り戻そう",
+      "text": "ポイントサイト経由の申し込みで、サブスク代の一部がポイントで戻ってきます。",
+      "cta": "ポイントサイトを見る",
+      "url": ""
+    }
+  ],
+  "REPORT": {
+    "mobile": [
+      {
+        "sid": "linemo",
+        "plan": "ベストプラン 〜3GB",
+        "price": 990,
+        "gb": "〜3GB",
+        "url": ""
+      },
+      {
+        "sid": "iijmio",
+        "plan": "5GB",
+        "price": 950,
+        "gb": "5GB",
+        "url": ""
+      },
+      {
+        "sid": "iijmio",
+        "plan": "10GB",
+        "price": 1400,
+        "gb": "10GB",
+        "url": ""
+      },
+      {
+        "sid": "rakutenmobile",
+        "plan": "〜3GB",
+        "price": 1078,
+        "gb": "〜3GB",
+        "url": ""
+      },
+      {
+        "sid": "rakutenmobile",
+        "plan": "無制限",
+        "price": 3278,
+        "gb": "無制限",
+        "url": ""
+      },
+      {
+        "sid": "mineo",
+        "plan": "マイピタ 5GB",
+        "price": 1298,
+        "gb": "5GB",
+        "url": ""
+      },
+      {
+        "sid": "ahamo",
+        "plan": "30GB",
+        "price": 2970,
+        "gb": "30GB",
+        "url": ""
+      },
+      {
+        "sid": "uq",
+        "plan": "ミニミニプラン",
+        "price": 2365,
+        "gb": "4GB",
+        "url": "",
+        "set": [
+          "auhikari"
+        ]
+      },
+      {
+        "sid": "ymobile",
+        "plan": "シンプル3 S",
+        "price": 3058,
+        "gb": "5GB",
+        "url": "",
+        "set": [
+          "sbhikari",
+          "sbair"
+        ]
+      },
+      {
+        "sid": "povo",
+        "plan": "30GB/30日",
+        "price": 2780,
+        "gb": "30GB",
+        "url": ""
+      },
+      {
+        "sid": "nihontsushin",
+        "plan": "合理的みんなのプラン",
+        "price": 1390,
+        "gb": "20GB",
+        "url": ""
+      }
+    ],
+    "net": [
+      {
+        "sid": "gmohikari",
+        "name": "GMOとくとくBB光",
+        "type": "マンション",
+        "price": 3773,
+        "cashback": 0,
+        "months": 24,
+        "url": ""
+      },
+      {
+        "sid": "enhikari",
+        "name": "enひかり",
+        "type": "マンション",
+        "price": 3520,
+        "cashback": 0,
+        "months": 24,
+        "url": ""
+      },
+      {
+        "sid": "nuro",
+        "name": "NURO 光 マンション",
+        "type": "マンション",
+        "price": 2090,
+        "cashback": 0,
+        "months": 24,
+        "url": ""
+      },
+      {
+        "sid": "auhikari",
+        "name": "auひかり マンション",
+        "type": "マンション",
+        "price": 4180,
+        "cashback": 0,
+        "months": 24,
+        "url": "",
+        "set": [
+          "au",
+          "uq",
+          "povo"
+        ]
+      },
+      {
+        "sid": "sbhikari",
+        "name": "ソフトバンク光 マンション",
+        "type": "マンション",
+        "price": 4180,
+        "cashback": 0,
+        "months": 24,
+        "url": "",
+        "set": [
+          "softbank",
+          "ymobile"
+        ]
+      },
+      {
+        "sid": "docomohikari",
+        "name": "ドコモ光 マンション",
+        "type": "マンション",
+        "price": 4400,
+        "cashback": 0,
+        "months": 24,
+        "url": "",
+        "set": [
+          "docomo",
+          "ahamo"
+        ]
+      },
+      {
+        "sid": "rakutenhikari",
+        "name": "楽天ひかり マンション",
+        "type": "マンション",
+        "price": 4180,
+        "cashback": 0,
+        "months": 24,
+        "url": "",
+        "set": [
+          "rakutenmobile"
+        ]
+      },
+      {
+        "sid": "gmohikari",
+        "name": "GMOとくとくBB光",
+        "type": "戸建て",
+        "price": 4818,
+        "cashback": 0,
+        "months": 24,
+        "url": ""
+      },
+      {
+        "sid": "enhikari",
+        "name": "enひかり",
+        "type": "戸建て",
+        "price": 4620,
+        "cashback": 0,
+        "months": 24,
+        "url": ""
+      }
+    ],
+    "electric": [
+      {
+        "name": "楽天でんき",
+        "d": "energy.rakuten.co.jp",
+        "c": "#BF0000",
+        "t": "R",
+        "rate": 0,
+        "point": "楽天ポイントが貯まる",
+        "url": "",
+        "set": [
+          "rakutenmobile",
+          "rakutenhikari",
+          "rakutenpremium"
+        ]
+      },
+      {
+        "name": "ドコモでんき",
+        "d": "docomo.ne.jp",
+        "c": "#CC0033",
+        "t": "d",
+        "rate": 0,
+        "point": "dポイントが貯まる",
+        "url": "",
+        "set": [
+          "docomo",
+          "ahamo",
+          "docomohikari"
+        ]
+      },
+      {
+        "name": "auでんき",
+        "d": "au.com",
+        "c": "#EB5505",
+        "t": "au",
+        "rate": 0,
+        "point": "Pontaポイントが貯まる",
+        "url": "",
+        "set": [
+          "au",
+          "uq",
+          "povo",
+          "auhikari"
+        ]
+      },
+      {
+        "name": "ソフトバンクでんき",
+        "d": "softbank.jp",
+        "c": "#888888",
+        "t": "SB",
+        "rate": 0,
+        "point": "PayPayポイントが貯まる",
+        "url": "",
+        "set": [
+          "softbank",
+          "ymobile",
+          "linemo",
+          "sbhikari"
+        ]
+      },
+      {
+        "name": "Looopでんき",
+        "d": "looop-denki.com",
+        "c": "#F39800",
+        "t": "L",
+        "rate": 0,
+        "point": "基本料金0円",
+        "url": ""
+      },
+      {
+        "name": "オクトパスエナジー",
+        "d": "octopusenergy.co.jp",
+        "c": "#5840FF",
+        "t": "OE",
+        "rate": 0,
+        "point": "実質再エネ100%",
+        "url": ""
+      }
+    ],
+    "cards": [
+      {
+        "name": "楽天カード",
+        "d": "rakuten-card.co.jp",
+        "c": "#BF0000",
+        "t": "R",
+        "fee": 0,
+        "rate": 0.01,
+        "point": "楽天ポイント",
+        "url": "",
+        "set": [
+          "rakutenmobile",
+          "rakutenhikari",
+          "rakutenmagazine",
+          "rakutenmusic",
+          "rakutentv",
+          "rakutenpremium",
+          "rakutenkakeibo",
+          "rakutenturbo"
+        ],
+        "setLabel": "楽天のサービス"
+      },
+      {
+        "name": "Amazon Mastercard",
+        "d": "amazon.co.jp",
+        "c": "#232F3E",
+        "t": "A",
+        "fee": 0,
+        "rate": 0.01,
+        "point": "Amazonポイント",
+        "url": "",
+        "set": [
+          "amazonprime",
+          "amazonmusic",
+          "kindleu",
+          "audible",
+          "primechannel",
+          "amazonphotos"
+        ],
+        "setLabel": "Amazonのサービス"
+      },
+      {
+        "name": "dカード",
+        "d": "dcard.docomo.ne.jp",
+        "c": "#CC0033",
+        "t": "d",
+        "fee": 0,
+        "rate": 0.01,
+        "point": "dポイント",
+        "url": "",
+        "set": [
+          "docomo",
+          "ahamo",
+          "docomohikari",
+          "home5g",
+          "dmagazine",
+          "danime",
+          "lemino"
+        ],
+        "setLabel": "ドコモのサービス"
+      },
+      {
+        "name": "au PAY カード",
+        "d": "au.com",
+        "c": "#EB5505",
+        "t": "au",
+        "fee": 0,
+        "rate": 0.01,
+        "point": "Pontaポイント",
+        "url": "",
+        "set": [
+          "au",
+          "uq",
+          "povo",
+          "auhikari",
+          "telasa"
+        ],
+        "setLabel": "au・UQ mobile・povo"
+      },
+      {
+        "name": "PayPayカード",
+        "d": "paypay-card.co.jp",
+        "c": "#FF0033",
+        "t": "P",
+        "fee": 0,
+        "rate": 0.01,
+        "point": "PayPayポイント",
+        "url": "",
+        "set": [
+          "softbank",
+          "ymobile",
+          "linemo",
+          "sbhikari",
+          "sbair",
+          "lyp",
+          "yahoopremium"
+        ],
+        "setLabel": "ソフトバンク・ワイモバイル・LINEMO・LYP"
+      },
+      {
+        "name": "三井住友カード（NL）",
+        "d": "smbc-card.com",
+        "c": "#00523F",
+        "t": "NL",
+        "fee": 0,
+        "rate": 0.005,
+        "point": "Vポイント",
+        "url": "",
+        "note": "対象のコンビニ・飲食店で高還元"
+      }
+    ]
+  }
+}

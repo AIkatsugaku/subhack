@@ -74,3 +74,13 @@
 - 「カレンダーに追加」は予定を .ics ファイルにして、スマホのカレンダーで前日に通知します
 
 ※LINEから自動で通知を送るには、LINE公式アカウントの予約配信、または Messaging API とサーバーが必要です。
+
+## 管理画面（admin.html）
+
+本部用の管理画面です： https://aikatsugaku.github.io/subhack/admin.html
+
+- LINE公式アカウント（ベーシックID・友だち追加URL）、有料会員、サービス別アフィリエイト、見直しレポートの乗り換え先・申込URL、おすすめ枠、基本設定を編集できます
+- 「保存して公開」で `settings.json` が GitHub 上で更新され、1〜2分で公開サイトに反映されます
+- ログインには GitHub の Fine-grained token（対象: このリポジトリだけ / Permissions → Contents: Read and write）を使います
+- 変更履歴は GitHub の `settings.json` の履歴で確認・復元できます
+- `config.js` / `report-config.js` は初期値です。`settings.json` にある項目はそちらが優先されます

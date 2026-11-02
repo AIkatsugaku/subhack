@@ -1,5 +1,6 @@
-(() => {
+(async () => {
   'use strict';
+  await window.settingsReady;  // 管理画面の設定を先に反映
 
   const $ = (s, el = document) => el.querySelector(s);
   const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -364,7 +365,7 @@
     let acc = 0;
     const stops = total ? slices.map(sl => { const a = acc; acc += sl.v / total * 360; return `${sl.color} ${a}deg ${acc}deg`; }).join(', ') : '#E6E1D6 0deg 360deg';
     const st = stateApi();
-    const recs = RECOMMENDS.filter(r => r.url && (() => { try { return r.when(st); } catch { return false; } })());
+    const recs = RECOMMENDS.filter(r => r.url && r.enabled !== false && (() => { try { return RECOMMEND_RULES[r.id]?.when(st); } catch { return false; } })());
 
     $('#resultBody').innerHTML = `
       <div class="summary" id="card">

@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>管理画面｜サブハック</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="admin.css?v=2026110212193">
+</head>
+<body>
+
+<!-- ログイン -->
+<section class="login" id="login">
+  <div class="login-card">
+    <p class="login-brand">サブハック <span>管理画面</span></p>
+    <h1>本部ログイン</h1>
+    <p class="muted">GitHub のアクセストークンでログインします。トークンを持っている人だけが設定を保存できます。</p>
+    <label class="field"><span>アクセストークン</span>
+      <input id="token" type="password" placeholder="github_pat_…" autocomplete="off">
+    </label>
+    <label class="check"><input type="checkbox" id="remember" checked> このブラウザに保存する</label>
+    <button class="btn" id="btnLogin" type="button">ログイン</button>
+    <p class="err" id="loginErr" hidden></p>
+    <details class="help">
+      <summary>トークンの作り方</summary>
+      <ol>
+        <li>GitHub にログインし、<a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Fine-grained token の作成画面</a>を開く</li>
+        <li>「Repository access」で <b id="repoName1"></b> だけを選ぶ</li>
+        <li>「Permissions → Contents」を <b>Read and write</b> にする</li>
+        <li>作成されたトークン（github_pat_…）をここに貼り付ける</li>
+      </ol>
+      <p class="muted">本部のスタッフごとにトークンを分けておくと、誰が変更したか履歴でわかります。</p>
+    </details>
+  </div>
+</section>
+
+<!-- 管理画面 -->
+<div class="app" id="app" hidden>
+  <header class="top">
+    <p class="top-brand">サブハック <span>管理画面</span></p>
+    <div class="top-actions">
+      <a class="link" id="siteLink" href="./" target="_blank" rel="noopener">公開サイトを見る ↗</a>
+      <button class="link" id="btnLogout" type="button">ログアウト</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <nav class="nav" id="nav">
+      <button data-tab="dash" class="on" type="button">📊 ダッシュボード</button>
+      <button data-tab="line" type="button">💬 LINE公式アカウント</button>
+      <button data-tab="member" type="button">⭐ 有料会員</button>
+      <button data-tab="aff" type="button">🔗 アフィリエイト（サービス別）</button>
+      <button data-tab="report" type="button">📝 見直しレポート</button>
+      <button data-tab="recs" type="button">📣 おすすめ枠</button>
+      <button data-tab="site" type="button">⚙️ 基本設定</button>
+    </nav>
+    <main class="main" id="main"></main>
+  </div>
+
+  <div class="savebar" id="savebar">
+    <span id="saveState">変更はありません</span>
+    <button class="btn ghost" id="btnRevert" type="button">元に戻す</button>
+    <button class="btn" id="btnSave" type="button">保存して公開</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="config.js?v=2026110212193"></script>
+<script src="data.js?v=2026110212193"></script>
+<script src="icons.js?v=2026110212193"></script>
+<script src="report-config.js?v=2026110212193"></script>
+<script src="admin.js?v=2026110212193"></script>
+</body>
+</html>
