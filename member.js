@@ -1,7 +1,7 @@
 /*
  * 会員・相談まわり（合計カード画面の最後）
  * - 解約・見直しの予定日を登録 → カレンダー（.ics）に追加 / LINE公式アカウントに送って通知を受け取る
- * - 無料相談（LINE）
+ * - 有料会員の相談（LINE）
  * - 有料会員の案内
  * 設定は config.js の LINE と MEMBERSHIP。
  */
@@ -30,28 +30,30 @@ function buildMember({ items, SVC, yen, esc, icoHTML, iconOf }) {
   const m = MEMBERSHIP;
   return `
     <div class="panel mb" id="memberPanel">
-      <h3>🔔 解約・見直しの時期をお知らせ</h3>
-      <p class="mb-lead">「無料期間が終わる前に解約したい」「更新月に見直したい」サービスに日付を入れておくと、忘れずに済みます。</p>
+      <h3>🔔 LINE登録で、解約・見直しの時期をお知らせ</h3>
+      <p class="mb-lead">無料のLINE登録だけで使えます。「無料期間が終わる前に解約したい」「更新月に見直したい」日をLINEでお知らせします。</p>
+      <ol class="mb-steps">
+        <li><b>1</b><span>LINE公式アカウントを友だち追加（無料）</span></li>
+        <li><b>2</b><span>下のリストで、通知してほしいサービスに日付を入れる</span></li>
+        <li><b>3</b><span>「この予定でLINE通知をオンにする」を押して送信</span></li>
+      </ol>
+      <button class="btn line big" id="mbAdd" type="button">LINEで友だち追加（無料）</button>
       <div class="mb-list">${rows}</div>
       <p class="mb-count" id="mbCount"></p>
-      <div class="mb-btns">
-        <button class="btn" id="mbCalendar" type="button">📅 カレンダーに追加する</button>
-        <button class="btn line" id="mbLine" type="button">LINEで通知を受け取る</button>
-      </div>
-      <p class="rp-note">LINEで受け取るには、公式アカウントを友だち追加（無料会員登録）してから予定を送ってください。</p>
-      <button class="btn ghost line-add" id="mbAdd" type="button">LINE公式アカウントを友だち追加（無料）</button>
+      <button class="btn line" id="mbLine" type="button">この予定でLINE通知をオンにする</button>
+      <button class="link-btn" id="mbCalendar" type="button">LINEを使わず、スマホのカレンダーに入れる</button>
     </div>
 
     <div class="panel consult">
-      <h3>💬 LINEでいつでも無料相談</h3>
-      <p class="mb-lead">「どれを解約すればいい？」「もっと安くできる？」など、いまの内容をそのまま送って<b>何度でも無料</b>で相談できます。</p>
-      <button class="btn line big" id="mbConsult" type="button">LINEで無料相談する（何度でも0円）</button>
+      <h3>💬 いつでも、何度でもLINEで相談</h3>
+      <p class="mb-lead">「どれを解約すればいい？」「もっと安くできる？」を、気になったときにすぐLINEで聞けます。</p>
       <div class="premium">
         <div class="premium-head"><span class="premium-badge">有料会員</span><b>${esc(m.name)}</b></div>
         <div class="premium-price">月額 <b>¥${yen(m.price)}</b><small>（税込）</small></div>
         <ul>${m.features.map(f => `<li>${esc(f)}</li>`).join('')}</ul>
-        <button class="btn pr big" id="mbJoin" type="button">有料会員に申し込む</button>
+        <button class="btn pr big" id="mbJoin" type="button">月額¥${yen(m.price)}で相談し放題にする</button>
       </div>
+      <button class="link-btn" id="mbConsult" type="button">会員の方：いまの内容を添えてLINEで相談する</button>
     </div>`;
 }
 
@@ -128,12 +130,12 @@ function bindMember(root, { getItems, save, yen, SVC, toast }) {
 
   root.querySelector('#mbAdd').onclick = () => (LINE.addFriendUrl ? openUrl(LINE.addFriendUrl) : needLine());
 
-  // 無料相談：いまの内容を添えて送る
+  // 会員の相談：いまの内容を添えて送る
   root.querySelector('#mbConsult').onclick = () => {
     const list = [...getItems()].sort((a, b) => b.price - a.price);
     const total = list.reduce((a, b) => a + b.price, 0);
     const text = [
-      '【無料相談】',
+      '【会員相談】',
       `いまのサブスク・固定費：${list.length}件 月¥${yen(total)}`,
       ...list.slice(0, 20).map(i => `・${nameOf(i)}　¥${yen(i.price)}`),
       list.length > 20 ? `ほか${list.length - 20}件` : '',

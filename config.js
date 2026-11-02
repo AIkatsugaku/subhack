@@ -3,9 +3,9 @@
  * ここを書き換えるだけでリンクが反映されます。
  */
 const SITE = {
-  name: 'サブスクまとめ',
+  name: 'サブハック',
   url: 'https://aikatsugaku.github.io/subsc-matome/',      // 公開URL（シェア用）
-  hashtag: 'サブスクまとめ診断',         // シェア時のハッシュタグ
+  hashtag: 'サブハック',        // シェア時のハッシュタグ
   xAccount: '',                        // 例: 'your_account'（リクエスト用リンクに使用）
 };
 
@@ -25,11 +25,11 @@ const LINE = {
  * - joinUrl: 申し込み先（Stripe の決済リンクなど）。空なら LINE で申し込みメッセージを送る形になります。
  */
 const MEMBERSHIP = {
-  name: 'サブスク見直しプレミアム',
+  name: 'サブハック プレミアム',
   price: 400,
   features: [
+    'LINEでいつでも・何度でも相談できる',
     '月1回のWeb個別相談（30分）',
-    '解約・見直し時期をLINEでお知らせ',
     'あなた専用の見直しプランを作成',
   ],
   joinUrl: '',
