@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-02T09:55:31.765Z",
+  "updatedAt": "2026-11-02T10:33:36.361Z",
   "SITE": {
     "name": "サブハック",
     "url": "https://aikatsugaku.github.io/subhack/",
@@ -9,7 +9,8 @@
   "LINE": {
     "id": "@878egyjc",
     "addFriendUrl": "https://lin.ee/NqFzPUX",
-    "qr": "images/line-qr.png?v=1793613228644"
+    "qr": "images/line-qr.png?v=1793613228644",
+    "icon": "images/line-icon.png?v=1793615613447"
   },
   "MEMBERSHIP": {
     "name": "サブハック プレミアム",
