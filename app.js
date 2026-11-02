@@ -8,9 +8,6 @@
   const flat = s => s.replace(/\n/g, '');
   const STORE_KEY = 'subsc.items.v1';
 
-  // 定番 TOP10 の並び（ランキング行に表示）
-  const TOP10 = ['netflix', 'amazonprime', 'youtubepremium', 'spotify', 'disneyplus', 'unext', 'chatgpt', 'icloud', 'applemusic', 'nso'];
-
   // サービス索引
   const SVC = {};
   const CAT = {};
@@ -53,7 +50,7 @@
   }
   function cardHTML(s) {
     return `<button class="tile${s.multi ? ' multi' : ''}" data-sid="${s.id}" style="--c:${s.c}" type="button" aria-label="${esc(flat(s.n))}">
-      ${glyphHTML(iconOf({ sid: s.id }))}<span class="tname">${esc(flat(s.n))}</span></button>`;
+      ${glyphHTML(iconOf({ sid: s.id }))}<span class="tname">${esc(flat(s.n))}</span><span class="tfrom">月¥${yen(Math.min(...s.p.map(p => p[1])))}〜</span></button>`;
   }
   const rowHTML = ({ id, cls = '', title, extra = '', desc = '', track }) => `
     <section class="row ${cls}" ${id ? `id="${id}"` : ''}>
@@ -76,19 +73,15 @@
 
   function renderRows() {
     const my = rowHTML({ id: 'rowMy', cls: 'my', title: 'マイリスト', extra: '<span class="more" id="myMeta"></span>', track: '' });
-    const top = rowHTML({
-      cls: 'top', title: '定番サブスク TOP 10',
-      track: TOP10.filter(id => SVC[id]).map((id, i) => `<div class="rank"><span class="num">${i + 1}</span>${cardHTML(SVC[id])}</div>`).join(''),
-    });
     const cats = CATEGORIES.map(cat => rowHTML({
       id: 'cat-' + cat.id, cls: 'cat',
       title: esc(cat.name),
-      extra: (cat.required ? '<span class="req">必須</span>' : '') + `<span class="more">${cat.items.length}件${cat.note ? ' ' + esc(cat.note) : ''}</span>`,
+      extra: (cat.required ? '<span class="req">必須</span>' : '') + `<span class="more">${cat.items.length}件${cat.note ? ' ' + esc(cat.note) : ''}</span><button class="see-all" type="button">すべて見る ›</button>`,
       desc: cat.desc ? esc(cat.desc) : '',
       track: cat.items.map(cardHTML).join('') +
         `<button class="tile add" data-add="${cat.id}" type="button"><span class="glyph">＋</span><span class="tname">その他を追加</span></button>`,
     })).join('');
-    $('#rows').innerHTML = my + top + cats;
+    $('#rows').innerHTML = my + cats;
     $$('.row.cat').forEach((el, i) => el.dataset.cat = CATEGORIES[i].id);
 
     $('#chips').innerHTML = `<button class="chip all" id="chipAll" type="button">ジャンル</button>` +
@@ -108,7 +101,7 @@
         if (seen.has(i.sid)) return;
         seen.add(i.sid); cards.push(cardHTML(SVC[i.sid]));
       } else {
-        cards.push(`<button class="tile sel" data-custom="${i.uid}" style="--c:${i.color || '#555'}" type="button">${glyphHTML(iconOf(i))}<span class="tname">${esc(i.name)}</span><span class="tprice"><b>¥${yen(i.price)}</b></span></button>`);
+        cards.push(`<button class="tile sel" data-custom="${i.uid}" style="--c:${i.color || '#555'}" type="button">${glyphHTML(iconOf(i))}<span class="tname">${esc(i.name)}</span><span class="tprice">登録中 ¥${yen(i.price)}/月</span></button>`);
       }
     });
     $('.track', row).innerHTML = cards.join('');
@@ -123,10 +116,10 @@
       let cnt = el.querySelector('.cnt');
       if (list.length) {
         if (!pr) { pr = document.createElement('span'); pr.className = 'tprice'; el.appendChild(pr); }
-        pr.innerHTML = `<b>¥${yen(sum(list))}</b>`;
+        pr.textContent = `登録中 ¥${yen(sum(list))}/月`;
         if (list.length > 1) {
           if (!cnt) { cnt = document.createElement('span'); cnt.className = 'cnt'; el.appendChild(cnt); }
-          cnt.textContent = '×' + list.length;
+          cnt.textContent = list.length + '件';
         } else cnt?.remove();
       } else { pr?.remove(); cnt?.remove(); }
     });
@@ -141,7 +134,7 @@
     const total = sum(items);
     const last = items.slice(-4).reverse();
     $('#barIcons').innerHTML = last.map(i => icoHTML(iconOf(i))).join('') + (items.length > 4 ? `<span class="more">+${items.length - 4}</span>` : '');
-    $('#barCount').textContent = items.length ? `${items.length}件・年¥${yen(total * 12)}` : 'まだ選ばれていません';
+    $('#barCount').textContent = items.length ? `${items.length}件・年¥${yen(total * 12)}` : 'タップしたサービスがここに入ります';
     $('#barSum').innerHTML = `¥${yen(total)}<small>/月</small>`;
     $('#btnCard').classList.toggle('ready', items.length > 0);
   }
@@ -339,7 +332,7 @@
   }
   function startPicking() {
     clearSearch();
-    $('.row.top').scrollIntoView();
+    $('.row.cat').scrollIntoView();
   }
 
   // ---------- アニメーション ----------
@@ -633,6 +626,14 @@
     if (e.target.closest('.tile[data-custom]')) return openList();
     const chip = e.target.closest('.chip[data-go]');
     if (chip) return jump(chip.dataset.go);
+    const seeAll = e.target.closest('.see-all');
+    if (seeAll) {
+      const row = seeAll.closest('.row');
+      const open = row.classList.toggle('expanded');
+      seeAll.textContent = open ? '閉じる' : 'すべて見る ›';
+      if (!open) row.scrollIntoView();
+      return;
+    }
     const arrow = e.target.closest('.arrow');
     if (arrow) {
       const track = arrow.parentElement.querySelector('.track');
