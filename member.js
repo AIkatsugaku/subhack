@@ -37,6 +37,11 @@ function buildMember({ items, SVC, yen, esc, icoHTML, iconOf }) {
         <li><b>2</b><span>下のリストで、通知してほしいサービスに日付を入れる</span></li>
         <li><b>3</b><span>「この予定でLINE通知をオンにする」を押して送信</span></li>
       </ol>
+      ${LINE.icon || LINE.qr ? `<div class="line-card">
+        ${LINE.icon ? `<img class="line-icon" src="${esc(LINE.icon)}" alt="">` : ''}
+        <div class="line-info"><b>${esc(LINE.name || SITE.name + ' 公式LINE')}</b><small>${esc(LINE.id)}</small></div>
+        ${LINE.qr ? `<figure class="line-qr"><img src="${esc(LINE.qr)}" alt="友だち追加のQRコード"><figcaption>スマホで読み取り</figcaption></figure>` : ''}
+      </div>` : ''}
       <button class="btn line big" id="mbAdd" type="button">LINEで友だち追加（無料）</button>
       <div class="mb-list">${rows}</div>
       <p class="mb-count" id="mbCount"></p>

@@ -386,3 +386,15 @@ details p, details .ptable { padding: 0 14px 12px; margin: 0; font-size: 13px; }
 .scan-row { flex-wrap: wrap; }
 .scan-name { flex: 1 1 150px; }
 .scan-amt { margin-left: auto; }
+
+/* LINE公式アカウントのカード */
+.line-card { display: flex; align-items: center; gap: 12px; background: #F2FBF5; border: 1px solid #C9EED6; border-radius: 16px; padding: 12px 14px; margin-top: 12px; }
+.line-icon { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; background: #fff; box-shadow: 0 0 0 2px #06C755; flex-shrink: 0; }
+.line-info { flex: 1; min-width: 0; }
+.line-info b { display: block; font-size: 14px; color: var(--ink); }
+.line-info small { font-size: 12px; color: var(--sub); }
+.line-qr { margin: 0; text-align: center; flex-shrink: 0; }
+.line-qr img { width: 92px; height: 92px; display: block; background: #fff; border-radius: 8px; padding: 4px; }
+.line-qr figcaption { font-size: 10px; color: var(--sub); margin-top: 2px; }
+/* スマホではQRより友だち追加ボタンの方が便利なので小さく */
+@media (max-width: 520px) { .line-qr img { width: 64px; height: 64px; } }

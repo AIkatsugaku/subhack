@@ -35,8 +35,47 @@
       headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28', ...(opts.headers || {}) },
     });
     const body = await res.json().catch(() => ({}));
-    if (!res.ok) { const e = new Error(body.message || res.statusText); e.status = res.status; throw e; }
+    if (!res.ok) {
+      const e = new Error(body.message || res.statusText);
+      e.status = res.status;
+      e.need = res.headers.get('x-accepted-github-permissions') || '';  // 足りない権限（GitHubが教えてくれる場合）
+      throw e;
+    }
     return body;
+  }
+
+  // 保存できる権限があるか確かめる（参照されないデータを1つ作るだけで、サイトの内容は変わらない）
+  async function canWrite() {
+    try {
+      await gh(`/repos/${REPO}/git/blobs`, { method: 'POST', body: JSON.stringify({ content: 'subhack-admin-write-check', encoding: 'utf-8' }) });
+      return true;
+    } catch (e) {
+      if (e.status === 403 || e.status === 404) return false;
+      throw e;
+    }
+  }
+
+  const TOKEN_PAGE = 'https://github.com/settings/personal-access-tokens';
+  const FIX_PERMISSION = `<b>このトークンには「保存」の権限がありません。</b><br>
+    <a href="${TOKEN_PAGE}" target="_blank" rel="noopener">GitHub のトークン一覧</a>で使っているトークンを開き、
+    「Repository permissions」の <b>Contents</b> を <b>Read and write</b> に変えて「Update」を押してください。
+    トークンの文字列は変わらないので、そのまま もう一度ログインすれば使えます。`;
+
+  // GitHub のエラーを、何をすればいいかが分かる日本語にする
+  function explain(e) {
+    if (e.status === 401) return `<b>トークンが正しくないか、有効期限が切れています。</b><br><a href="${TOKEN_PAGE}" target="_blank" rel="noopener">GitHub のトークン一覧</a>で期限を確認し、新しく作ってログインし直してください。`;
+    if (e.status === 403 && /rate limit/i.test(e.message)) return '<b>短時間に操作が集中しました。</b><br>1分ほど待ってからもう一度お試しください。';
+    if (e.status === 403 || (e.status === 404 && e.need)) return FIX_PERMISSION;
+    if (e.status === 404) return `<b>リポジトリ（${REPO}）にアクセスできません。</b><br>トークンの「Repository access」で <b>${REPO}</b> が選ばれているか確認してください。`;
+    if (e.status === 409 || e.status === 422) return '<b>ほかの人が先に保存しました。</b><br>「元に戻す」で最新を読み込み、もう一度変更して保存してください。';
+    if (!e.status) return '<b>GitHub に接続できませんでした。</b><br>インターネット接続を確認して、もう一度お試しください。';
+    return `<b>保存できませんでした（${e.status}）。</b><br>${esc(e.message)}`;
+  }
+
+  function showError(html) {
+    const box = $('#errBox');
+    box.querySelector('div').innerHTML = html;
+    box.hidden = false;
   }
   const b64encode = str => btoa(unescape(encodeURIComponent(str)));
   const b64decode = b64 => decodeURIComponent(escape(atob(b64.replace(/\n/g, ''))));
@@ -61,6 +100,7 @@
   async function saveSettings() {
     const btn = $('#btnSave');
     btn.disabled = true; btn.textContent = '保存中…';
+    $('#errBox').hidden = true;
     try {
       state.updatedAt = new Date().toISOString();
       const content = JSON.stringify(state, null, 2) + '\n';
@@ -74,8 +114,7 @@
       toast('保存しました。1〜2分で公開サイトに反映されます');
       if (tab === 'dash') render();
     } catch (e) {
-      if (e.status === 409 || e.status === 422) toast('ほかの人が先に保存しました。「元に戻す」で最新を読み込んでください');
-      else toast('保存できませんでした：' + e.message);
+      showError(explain(e));
     } finally {
       btn.disabled = false; btn.textContent = '保存して公開';
     }
@@ -136,6 +175,39 @@
     return `<span class="ico" style="background:${s.c}">${esc(s.t ?? flat(s.n).slice(0, 1))}${d ? `<img src="${iconUrl(d)}" alt="" loading="lazy" onerror="this.remove()">` : ''}</span>`;
   }
 
+  // ---------- LINEの画像 ----------
+  // アップロード直後は公開サイトにまだ出ていないので、プレビューは手元の画像を使う
+  const preview = {};
+  const IMG = { icon: { path: 'images/line-icon.png', max: 512 }, qr: { path: 'images/line-qr.png', max: 600 } };
+  function imageField(kind, label, hint) {
+    const src = preview[kind] || state.LINE[kind] || '';
+    return `<div class="img-field">
+      <span class="img-label">${esc(label)}</span>
+      <div class="img-box ${kind}">${src ? `<img src="${esc(src)}" alt="">` : '<span>未設定</span>'}</div>
+      <label class="btn sm ghost">画像を選ぶ<input type="file" accept="image/*" data-upload="${kind}" hidden></label>
+      ${src ? `<button class="btn sm danger" data-clearimg="${kind}" type="button">外す</button>` : ''}
+      <small class="muted">${esc(hint)}</small>
+    </div>`;
+  }
+  // 縮小してPNGにし、リポジトリの images/ に保存する
+  async function uploadImage(kind, file) {
+    const { path, max } = IMG[kind];
+    const bmp = await createImageBitmap(file);
+    const s = Math.min(1, max / Math.max(bmp.width, bmp.height));
+    const cv = document.createElement('canvas');
+    cv.width = Math.round(bmp.width * s); cv.height = Math.round(bmp.height * s);
+    cv.getContext('2d').drawImage(bmp, 0, 0, cv.width, cv.height);
+    const dataUrl = cv.toDataURL('image/png');
+    let fileSha;
+    try { fileSha = (await gh(`/repos/${REPO}/contents/${path}?ref=${BRANCH}`)).sha; } catch (e) { if (e.status !== 404) throw e; }
+    await gh(`/repos/${REPO}/contents/${path}`, {
+      method: 'PUT',
+      body: JSON.stringify({ message: `管理画面からLINEの画像を更新（${kind === 'icon' ? 'アイコン' : 'QRコード'}）`, content: dataUrl.split(',')[1], branch: BRANCH, ...(fileSha ? { sha: fileSha } : {}) }),
+    });
+    preview[kind] = dataUrl;
+    state.LINE[kind] = `${path}?v=${Date.now()}`;  // 差し替えてもすぐ新しい画像が出るように
+  }
+
   const views = {
     dash() {
       const affCount = Object.values(state.AFFILIATE || {}).filter(Boolean).length;
@@ -172,9 +244,16 @@
           ${inputHTML('LINE.id', { label: 'ベーシックID', ph: '@123abcde', hint: 'LINE Official Account Manager のホーム右上に表示される @ から始まるID' })}
           ${inputHTML('LINE.addFriendUrl', { label: '友だち追加URL', ph: 'https://lin.ee/xxxxxxx', hint: '「友だちを増やす → 友だち追加ガイド」で取得できるURL' })}
         </div>
+        ${inputHTML('LINE.name', { label: 'アカウント名（サイトに表示）', ph: 'サブハック公式LINE' })}
         <div class="tools">
           <button class="btn sm line" id="testAdd" type="button">友だち追加リンクを試す</button>
           <button class="btn sm line" id="testMsg" type="button">トーク画面を試す</button>
+        </div>
+        <h3>LINEの画像</h3>
+        <p class="muted">サイトの「LINE登録」の欄に表示されます。QRコードはパソコンで見ている人がスマホで読み取って友だち追加するのに使います。</p>
+        <div class="img-fields">
+          ${imageField('icon', 'アカウントのアイコン', 'LINE Official Account Manager のプロフィール画像と同じものがおすすめ（正方形）')}
+          ${imageField('qr', '友だち追加のQRコード', '「友だちを増やす → 友だち追加ガイド」でダウンロードできるQRコード画像')}
         </div>
         <h3>サイトから届くメッセージ</h3>
         <ul class="todo">
@@ -310,6 +389,22 @@
       ? openUrl(`https://line.me/R/oaMessage/${encodeURIComponent(state.LINE.id)}/?${encodeURIComponent('【テスト】管理画面からの接続確認です')}`)
       : toast('ベーシックIDを入れてください'));
 
+    // LINEの画像
+    $$('[data-upload]', main).forEach(inp => inp.onchange = async () => {
+      const file = inp.files[0];
+      if (!file) return;
+      if (file.size > 10 * 1024 * 1024) { toast('10MB以下の画像を選んでください'); return; }
+      toast('画像をアップロードしています…');
+      try {
+        await uploadImage(inp.dataset.upload, file);
+        markDirty(); render();
+        toast('画像を登録しました。「保存して公開」でサイトに反映されます');
+      } catch (e) { showError(explain(e)); }
+    });
+    $$('[data-clearimg]', main).forEach(b => b.onclick = () => {
+      delete preview[b.dataset.clearimg]; state.LINE[b.dataset.clearimg] = ''; markDirty(); render();
+    });
+
     // アフィリエイトの絞り込み
     const filterAff = () => {
       const q = norm($('#affQ')?.value), cat = $('#affCat')?.value, only = $('#affOnly')?.checked;
@@ -356,16 +451,18 @@
     const err = $('#loginErr');
     err.hidden = true;
     try {
-      const repo = await gh(`/repos/${REPO}`);
-      if (!repo.permissions?.push) throw new Error('このトークンには保存する権限がありません（Contents: Read and write が必要です）');
+      await gh(`/repos/${REPO}`);
+      // アカウントの権限ではなく、トークン自体で保存できるかを確かめる
+      if (!(await canWrite())) { const e = new Error('no write'); e.status = 403; throw e; }
       await loadSettings();
       try { (remember ? localStorage : sessionStorage).setItem(TOKEN_KEY, token); } catch { }
       $('#login').hidden = true; $('#app').hidden = false;
       render();
     } catch (e) {
       token = '';
-      err.textContent = e.status === 401 ? 'トークンが正しくありません' : e.status === 404 ? 'リポジトリにアクセスできません。トークンの対象リポジトリを確認してください' : e.message;
+      err.innerHTML = explain(e);
       err.hidden = false;
+      try { localStorage.removeItem(TOKEN_KEY); sessionStorage.removeItem(TOKEN_KEY); } catch { }
     }
   }
 
@@ -379,6 +476,7 @@
   };
   $('#nav').addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if (b) { tab = b.dataset.tab; render(); } });
   $('#btnSave').onclick = saveSettings;
+  $('#errClose').onclick = () => { $('#errBox').hidden = true; };
   $('#btnRevert').onclick = async () => {
     if (!confirm('保存していない変更を取り消して、最新の設定を読み込みますか？')) return;
     await loadSettings(); render(); toast('最新の設定を読み込みました');
