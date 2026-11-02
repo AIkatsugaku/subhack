@@ -5,7 +5,7 @@
 const SITE = {
   name: 'サブスクまとめ',
   url: 'https://aikatsugaku.github.io/subsc-matome/',      // 公開URL（シェア用）
-  hashtag: 'わたしのサブスク',          // シェア時のハッシュタグ
+  hashtag: 'サブスクまとめ診断',         // シェア時のハッシュタグ
   xAccount: '',                        // 例: 'your_account'（リクエスト用リンクに使用）
 };
 

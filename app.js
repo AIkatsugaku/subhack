@@ -19,7 +19,6 @@
 
   // ---------- 状態 ----------
   let items = load();
-  let skipMobile = false;
 
   function load() {
     try { return JSON.parse(localStorage.getItem(STORE_KEY)) || []; } catch { return []; }
@@ -52,33 +51,40 @@
   };
 
   // ---------- カタログ描画 ----------
+  // 見直し効果の大きい通信費から並べる
+  const ORDER = ['mobile', 'net', 'video', 'music', 'ai', 'book', 'game', 'cloud', 'tool', 'learn', 'gym', 'money', 'shop', 'oshi', 'fixed'];
+  const CATS = [...ORDER.map(id => CAT[id]).filter(Boolean), ...CATEGORIES.filter(c => !ORDER.includes(c.id))];
+  // 「家族が払っている」などの0円プランは除いた最安値
+  const minPrice = s => {
+    const paid = s.p.map(p => p[1]).filter(v => v > 0);
+    return paid.length ? Math.min(...paid) : 0;
+  };
+
   function renderCatalog() {
-    const total = CATEGORIES.length;
-    $('#catalog').innerHTML = CATEGORIES.map((cat, idx) => `
+    $('#catalog').innerHTML = CATS.map(cat => `
       <section class="cat" id="cat-${cat.id}" data-cat="${cat.id}">
         <div class="cat-head">
-          <h2>${esc(cat.name)}</h2>${cat.required ? '<span class="req">必須</span>' : ''}
-          <span class="rule"></span><span class="num">${idx + 1}/${total}</span>
+          <span class="emo">${cat.emoji || '・'}</span><h2>${esc(cat.name)}</h2>
+          <span class="picked" hidden></span>
         </div>
         ${cat.desc ? `<p class="cat-desc">${esc(cat.desc)}</p>` : ''}
         <div class="grid">
           ${cat.items.map(s => `
-            <button class="tile${s.multi ? ' multi' : ''}" data-sid="${s.id}" type="button">
+            <button class="tile" data-sid="${s.id}" type="button">
               ${icoHTML(iconOf({ sid: s.id }))}
-              <span class="tname">${esc(s.n)}</span>
+              <span class="tx"><span class="tname">${esc(flat(s.n))}</span><span class="tfrom">${minPrice(s) ? `¥${yen(minPrice(s))}〜/月` : '¥0〜'}</span></span>
+              ${s.multi ? '<span class="tag-multi">複数OK</span>' : ''}
             </button>`).join('')}
           <button class="tile add" data-add="${cat.id}" type="button">
-            <span class="ico">＋</span><span class="tname">その他を追加</span>
+            <span class="ico">＋</span><span class="tx"><span class="tname">自分で追加</span><span class="tfrom">名前と金額を入力</span></span>
           </button>
         </div>
-        ${cat.note ? `<p class="cat-desc" style="margin-top:8px">${esc(cat.note)}</p>` : ''}
       </section>`).join('');
 
-    $('#chips').innerHTML = CATEGORIES.map(c =>
-      `<button class="chip" data-go="${c.id}" type="button">${esc(c.name)}<span class="dot" hidden></span></button>`).join('');
+    $('#chips').innerHTML = CATS.map(c =>
+      `<button class="chip" data-go="${c.id}" type="button">${c.emoji || ''} ${esc(c.name)}<span class="dot" hidden></span></button>`).join('');
 
     $('#serviceCount').textContent = totalServices;
-    $('.badge-round b').textContent = totalServices + '+';
   }
 
   function refreshTiles() {
@@ -88,11 +94,11 @@
       let pr = el.querySelector('.tprice');
       let cnt = el.querySelector('.cnt');
       if (list.length) {
-        if (!pr) { pr = document.createElement('span'); pr.className = 'tprice'; el.appendChild(pr); }
-        pr.textContent = '¥' + yen(sum(list));
+        if (!pr) { pr = document.createElement('span'); pr.className = 'tprice'; el.querySelector('.tx').appendChild(pr); }
+        pr.textContent = `¥${yen(sum(list))}/月`;
         if (list.length > 1) {
           if (!cnt) { cnt = document.createElement('span'); cnt.className = 'cnt'; el.appendChild(cnt); }
-          cnt.textContent = '×' + list.length;
+          cnt.textContent = list.length + '件';
         } else cnt?.remove();
       } else { pr?.remove(); cnt?.remove(); }
     });
@@ -101,21 +107,18 @@
       const dot = ch.querySelector('.dot');
       dot.hidden = !n; dot.textContent = n;
     });
+    $$('.cat').forEach(sec => {
+      const list = items.filter(i => i.cat === sec.dataset.cat);
+      const p = sec.querySelector('.picked');
+      p.hidden = !list.length; p.textContent = `${list.length}件・¥${yen(sum(list))}`;
+    });
   }
 
   function refreshBar() {
     const total = sum(items);
-    const box = $('#barIcons');
-    if (!items.length) box.innerHTML = '<span class="bar-empty"></span>';
-    else {
-      const last = items.slice(-4);
-      box.innerHTML = last.map(i => icoHTML(iconOf(i))).join('') + (items.length > 4 ? `<span class="more">+${items.length - 4}</span>` : '');
-    }
-    const badge = $('#barBadge');
-    badge.hidden = !items.length; badge.textContent = items.length;
-    $('#barSum').innerHTML = items.length
-      ? `<small>¥</small><b>${yen(total)}</b><small>/月</small>`
-      : '<small>¥</small><b>- ---</b><small>/月</small>';
+    $('#barIcons').innerHTML = items.slice(-3).reverse().map(i => icoHTML(iconOf(i))).join('');
+    $('#barBadge').textContent = items.length + '件';
+    $('#barSum').innerHTML = `<small>毎月の合計</small><b>¥${yen(total)}<i>/月</i></b>`;
     $('#btnCard').classList.toggle('ready', items.length > 0);
   }
 
@@ -144,7 +147,7 @@
 
   function customBlock({ withName, nameLabel = '名前', submitLabel = '追加する' }) {
     return `<div class="custom" id="customBox">
-      <div class="custom-title">＋ リストにないプラン・金額</div>
+      <div class="custom-title">✎ 金額を直接入力</div>
       ${withName ? `<input type="text" id="cName" placeholder="${esc(nameLabel)}" maxlength="30">` : ''}
       <div class="row">
         <input type="number" id="cPrice" inputmode="numeric" min="0" placeholder="金額（円）">
@@ -180,26 +183,26 @@
       </button>`;
 
     let html = `<div class="sh-head">${icoHTML(iconOf({ sid }))}<div><h3>${esc(flat(s.n))}</h3>
-      <p>${s.multi ? '何件でも追加できます（タップで追加）' : 'プランを選ぶと合計に入ります'}</p></div></div>`;
+      <p>${s.multi ? '複数OK：選ぶたびに1件追加されます' : '使っている料金プランを選択'}</p></div></div>`;
 
     if (s.multi && cur.length) {
       html += `<div class="sh-group">登録中（${cur.length}件）</div>` + cur.map(i => `
         <div class="li">${icoHTML(iconOf(i))}<div class="lt"><b>${esc(i.label || flat(s.n))}</b><small>${esc(i.plan)}</small></div>
         <span class="lp">¥${yen(i.price)}</span><button class="lx" data-del="${i.uid}" type="button">×</button></div>`).join('');
-      html += `<div class="sh-group">さらに追加する</div>`;
+      html += `<div class="sh-group">もう1件追加する</div>`;
     }
-    if (s.multi) html += `<div class="custom" style="margin-top:10px;padding:10px"><input type="text" id="mLabel" placeholder="名前（任意）例：推しの名前・店舗名" maxlength="30" style="margin:0"></div>`;
+    if (s.multi) html += `<div class="custom" style="margin-top:10px;padding:10px"><input type="text" id="mLabel" placeholder="メモ（任意）例：推しの名前・店舗名・家族の名前" maxlength="30" style="margin:0"></div>`;
 
-    html += active.map(p => planRow(p, s.p.indexOf(p))).join('');
-    if (old.length) html += `<div class="sh-group">新規受付を終了したプラン</div>` + old.map(p => planRow(p, s.p.indexOf(p))).join('');
+    html += `<div class="sh-group">料金プラン</div><div class="plans">` + active.map(p => planRow(p, s.p.indexOf(p))).join('') + `</div>`;
+    if (old.length) html += `<div class="sh-group">旧プラン（いまは申し込めないもの）</div><div class="plans">` + old.map(p => planRow(p, s.p.indexOf(p))).join('') + `</div>`;
     if (!s.multi) {
-      html += `<div class="sh-group">そのほか</div>
-        <button class="plan${single && single.price === 0 && single.plan === '払っていない' ? ' on' : ''}" data-free type="button">
-          <span class="radio"></span><span class="pl">払っていない<small>家族のプランに入っている・特典・無料期間など</small></span><span class="pp">¥<b>0</b>/月</span>
-        </button>`;
+      html += `<div class="sh-group">自分では払っていない</div><div class="plans">
+        <button class="plan${single && single.price === 0 && single.plan === '支払いなし' ? ' on' : ''}" data-free type="button">
+          <span class="radio"></span><span class="pl">使っているけど支払いなし<small>家族払い・カードやスマホの特典・無料体験中</small></span><span class="pp">¥<b>0</b></span>
+        </button></div>`;
     }
-    html += customBlock({ withName: false, submitLabel: s.multi ? 'この金額で追加' : 'この金額で登録' });
-    if (single) html += `<button class="btn danger" id="btnRemove" type="button">リストから外す</button>`;
+    html += customBlock({ withName: false, submitLabel: s.multi ? 'この金額で1件追加' : 'この金額にする' });
+    if (single) html += `<button class="btn danger" id="btnRemove" type="button">選択を解除する</button>`;
     html += affBox(sid);
 
     openSheet(html);
@@ -218,9 +221,9 @@
       hideGuide();
     };
     $$('.plan[data-i]', sheet).forEach(b => b.onclick = () => { const p = s.p[+b.dataset.i]; commit(p[0], p[1]); });
-    $('[data-free]', sheet)?.addEventListener('click', () => commit('払っていない', 0));
+    $('[data-free]', sheet)?.addEventListener('click', () => commit('支払いなし', 0));
     bindCustom((price, _n, mode) => commit(mode === 'y' ? `自分で入力（年額 ¥${yen(price * 12)}）` : '自分で入力', price));
-    $('#btnRemove')?.addEventListener('click', () => { items = items.filter(i => i !== single); refresh(); closeSheet(); toast('外しました'); });
+    $('#btnRemove')?.addEventListener('click', () => { items = items.filter(i => i !== single); refresh(); closeSheet(); toast('選択を解除しました'); });
     $$('[data-del]', sheet).forEach(b => b.onclick = () => {
       items = items.filter(i => i.uid !== b.dataset.del); refresh(); openService(sid, fromEl);
     });
@@ -228,10 +231,10 @@
 
   function openAdd(catId, fromEl) {
     const cat = CAT[catId];
-    openSheet(`<div class="sh-head"><span class="ico" style="background:#64748B">＋</span><div><h3>その他を追加</h3><p>${esc(cat.name)}</p></div></div>
+    openSheet(`<div class="sh-head"><span class="ico" style="background:#64748B">＋</span><div><h3>自分で追加</h3><p>${esc(cat.name)}に、一覧にないサービスを追加</p></div></div>
       ${customBlock({ withName: true, nameLabel: 'サービス名（例：〇〇プレミアム）', submitLabel: '追加する' })}`);
     $('#customBox').style.marginTop = '0';
-    $('#customBox .custom-title').textContent = 'サービス名と金額を入れてください';
+    $('#customBox .custom-title').textContent = 'サービス名と金額';
     bindCustom((price, name, mode) => {
       if (!name) { toast('サービス名を入れてください'); return; }
       const it = { uid: uid(), sid: 'custom', cat: catId, name, plan: mode === 'y' ? `年額 ¥${yen(price * 12)}` : '自分で入力', price, color: '#64748B' };
@@ -241,11 +244,11 @@
 
   function openList() {
     if (!items.length) {
-      openSheet(`<div class="sh-head"><div><h3>リスト確認・編集</h3></div></div><div class="empty-msg">まだ何も選ばれていません。<br>使っているサブスクをタップしてね。</div>`);
+      openSheet(`<div class="sh-head"><div><h3>マイリスト</h3></div></div><div class="empty-msg">まだ何も選ばれていません。<br>一覧から使っているものを選んでください。</div>`);
       return;
     }
-    let html = `<div class="sh-head"><div><h3>リスト確認・編集</h3><p>${items.length}件・タップでプラン変更</p></div></div>`;
-    CATEGORIES.forEach(cat => {
+    let html = `<div class="sh-head"><div><h3>マイリスト</h3><p>${items.length}件・名前を押すとプランを変更できます</p></div></div>`;
+    CATS.forEach(cat => {
       const list = items.filter(i => i.cat === cat.id);
       if (!list.length) return;
       html += `<div class="li-cat">${esc(cat.name)}　¥${yen(sum(list))}</div>` + list.map(i => `
@@ -254,9 +257,9 @@
           <span class="lp">¥${yen(i.price)}</span><button class="lx" data-del="${i.uid}" type="button" aria-label="削除">×</button>
         </div>`).join('');
     });
-    html += `<div class="li-sum"><span>合計</span><span>¥${yen(sum(items))}/月</span></div>
-      <button class="btn" id="lsCard" type="button">合計カードを見る</button>
-      <button class="link-btn" id="lsReset" type="button">すべてリセット</button>`;
+    html += `<div class="li-sum"><span>毎月の合計</span><span>¥${yen(sum(items))}/月</span></div>
+      <button class="btn" id="lsCard" type="button">結果を見る</button>
+      <button class="link-btn" id="lsReset" type="button">すべて削除</button>`;
     openSheet(html);
     $$('[data-del]', sheet).forEach(b => b.onclick = () => { items = items.filter(i => i.uid !== b.dataset.del); refresh(); openList(); });
     $$('[data-edit]', sheet).forEach(b => b.onclick = () => {
@@ -266,16 +269,16 @@
     });
     $('#lsCard').onclick = () => { closeSheet(); showCard(); };
     $('#lsReset').onclick = () => {
-      if (!confirm('選んだサブスクをすべて消しますか？')) return;
-      items = []; refresh(); closeSheet(); toast('リセットしました');
+      if (!confirm('マイリストをすべて削除しますか？')) return;
+      items = []; refresh(); closeSheet(); toast('すべて削除しました');
     };
   }
 
   function openCategories() {
-    openSheet(`<div class="sh-head"><div><h3>カテゴリ</h3><p>タップでジャンプ</p></div></div>
-      <div class="cat-list">${CATEGORIES.map(c => `<button data-jump="${c.id}" type="button">${esc(c.name)}<small>${c.items.length}サービス${items.some(i => i.cat === c.id) ? '・選択中 ' + items.filter(i => i.cat === c.id).length : ''}</small></button>`).join('')}</div>
-      <button class="btn ghost" data-anchor="howto" type="button">契約中のサブスクの確認方法</button>
-      <button class="btn ghost" data-anchor="prices" type="button">サブスクの料金一覧</button>
+    openSheet(`<div class="sh-head"><div><h3>カテゴリから探す</h3><p>押すとその場所へ移動します</p></div></div>
+      <div class="cat-list">${CATS.map(c => `<button data-jump="${c.id}" type="button">${c.emoji || ''} ${esc(c.name)}<small>${c.items.length}サービス${items.some(i => i.cat === c.id) ? '・選択中 ' + items.filter(i => i.cat === c.id).length : ''}</small></button>`).join('')}</div>
+      <button class="btn ghost" data-anchor="howto" type="button">忘れているサブスクの見つけ方</button>
+      <button class="btn ghost" data-anchor="prices" type="button">対応サービスと料金の目安</button>
       <button class="btn ghost" data-anchor="faq" type="button">よくある質問</button>`);
     $$('[data-jump]', sheet).forEach(b => b.onclick = () => { closeSheet(); jump(b.dataset.jump); });
     $$('[data-anchor]', sheet).forEach(b => b.onclick = () => { closeSheet(); document.getElementById(b.dataset.anchor).scrollIntoView(); });
@@ -333,16 +336,7 @@
   }
 
   function showCard() {
-    if (!items.length) { toast('まずはサブスクをタップしてね'); return; }
-    if (!skipMobile && !items.some(i => i.cat === 'mobile')) {
-      openSheet(`<div class="sh-head"><span class="ico" style="background:#13294b">📱</span><div><h3>スマホ代も入れてね</h3><p>スマホ代も毎月の固定費なので、サブスクとして計算します</p></div></div>
-        <button class="btn" id="goMobile" type="button">スマホ代を入れて、合計カードを見る</button>
-        <p style="font-size:12px;color:var(--sub);margin:10px 0 0">家族が払っている場合はキャリアを選んで「家族が払っている」を、プランがわからない場合はだいたいの額を入れてね。</p>
-        <button class="link-btn" id="skipMobile" type="button">スマホ代なしで合計カードを見る</button>`);
-      $('#goMobile').onclick = () => { closeSheet(); jump('mobile'); toast('キャリアをタップしてね'); };
-      $('#skipMobile').onclick = () => { skipMobile = true; closeSheet(); showCard(); };
-      return;
-    }
+    if (!items.length) { toast('まずは使っているものを選んでください'); return; }
     renderResult();
     $('#result').hidden = false;
     $('#result').scrollTop = 0;
@@ -353,52 +347,49 @@
 
   function shareText() {
     const total = sum(items);
-    return `わたしのサブスクは${items.length}件で月¥${yen(total)}（年¥${yen(total * 12)}）でした！`;
+    return `毎月の固定費・サブスクを診断したら、${items.length}件で月¥${yen(total)}（年¥${yen(total * 12)}）でした`;
   }
 
   function renderResult() {
     const total = sum(items);
     const sorted = [...items].sort((a, b) => b.price - a.price);
-    const shown = sorted.slice(0, 17);
-    const rest = sorted.length - shown.length;
     const date = new Date();
-    const breakdown = CATEGORIES.map(c => ({ c, v: catSum(c.id), n: items.filter(i => i.cat === c.id).length }))
+    const PALETTE = ['#0F766E', '#F0623C', '#14B8A6', '#F5B841', '#6C8EBF', '#B57EDC', '#7FB77E'];
+    const byCat = CATEGORIES.map(c => ({ c, v: catSum(c.id), n: items.filter(i => i.cat === c.id).length }))
       .filter(x => x.n).sort((a, b) => b.v - a.v);
-    const max = Math.max(1, ...breakdown.map(b => b.v));
+    // 7番目以降は「その他」にまとめる
+    const slices = byCat.slice(0, 6).map((b, k) => ({ name: b.c.name, v: b.v, color: PALETTE[k] }));
+    const restV = byCat.slice(6).reduce((a, b) => a + b.v, 0);
+    if (restV) slices.push({ name: 'その他', v: restV, color: '#C9C2B3' });
+    let acc = 0;
+    const stops = total ? slices.map(sl => { const a = acc; acc += sl.v / total * 360; return `${sl.color} ${a}deg ${acc}deg`; }).join(', ') : '#E6E1D6 0deg 360deg';
     const st = stateApi();
     const recs = RECOMMENDS.filter(r => r.url && (() => { try { return r.when(st); } catch { return false; } })());
 
     $('#resultBody').innerHTML = `
-      <div class="card" id="card">
-        <div class="card-head"><span>#${esc(SITE.hashtag)}</span><span>${date.getFullYear()}.${date.getMonth() + 1}</span></div>
-        <div class="card-grid">${shown.map(i => icoHTML(iconOf(i))).join('')}${rest > 0 ? `<span class="ico more">+${rest}</span>` : ''}</div>
-        <div class="card-total"><span class="lbl">月額合計</span><b>¥${yen(total)}</b></div>
-        <div class="card-sub"><span>年額 <b>¥${yen(total * 12)}</b></span><span>契約数 <b>${items.length}</b>件</span></div>
-        <div class="card-foot">${esc(SITE.name)}</div>
+      <div class="summary" id="card">
+        <div class="summary-head"><span>MY FIXED COST</span><span>${date.getFullYear()}年${date.getMonth() + 1}月</span></div>
+        <div class="summary-main">
+          <div class="donut" style="background:conic-gradient(${stops})">
+            <div class="donut-c"><small>毎月</small><b>¥${yen(total)}</b><small>${items.length}件</small></div>
+          </div>
+          <ul class="legend">${slices.map(sl => `<li><i style="background:${sl.color}"></i><span>${esc(sl.name)}</span><b>¥${yen(sl.v)}</b></li>`).join('')}</ul>
+        </div>
+        <div class="summary-stats">
+          <div><small>1年で</small><b>¥${yen(total * 12)}</b></div>
+          <div><small>1日あたり</small><b>¥${yen(total / 30)}</b></div>
+          <div><small>5年で</small><b>¥${yen(total * 60)}</b></div>
+        </div>
+        <div class="summary-icons">${sorted.slice(0, 20).map(i => icoHTML(iconOf(i))).join('')}</div>
       </div>
       <div class="share-row">
-        <button class="btn x" id="shareX" type="button">Xでポスト</button>
-        <button class="btn" id="saveImg" type="button">画像を保存</button>
+        <button class="btn x" id="shareX" type="button">Xでシェア</button>
+        <button class="btn" id="saveImg" type="button">画像で保存</button>
       </div>
-      <button class="btn ghost" id="editList" type="button">リストを編集する</button>
+      <button class="btn ghost" id="editList" type="button">マイリストを編集</button>
 
       <div class="panel">
-        <h3>サブスク代のまとめ</h3>
-        <div class="stat-row">
-          <div><small>1日あたり</small><b>¥${yen(total / 30)}</b></div>
-          <div><small>年間</small><b>¥${yen(total * 12)}</b></div>
-          <div><small>10年で</small><b>¥${yen(total * 120)}</b></div>
-        </div>
-      </div>
-
-      <div class="panel">
-        <h3>カテゴリ別の内訳</h3>
-        ${breakdown.map(b => `<div class="brk"><div class="brk-top"><span>${esc(b.c.name)}（${b.n}）</span><b>¥${yen(b.v)}</b></div>
-          <div class="brk-bar"><i style="width:${(b.v / max * 100).toFixed(1)}%"></i></div></div>`).join('')}
-      </div>
-
-      <div class="panel">
-        <h3>高い順トップ5</h3>
+        <h3>金額の大きいもの</h3>
         ${sorted.slice(0, 5).map(i => `<div class="li">${icoHTML(iconOf(i))}<div class="lt"><b>${esc(i.label || i.name || flat(SVC[i.sid]?.n || ''))}</b><small>${esc(i.plan)}</small></div><span class="lp">¥${yen(i.price)}</span></div>`).join('')}
       </div>
 
@@ -444,66 +435,93 @@
     ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
   }
   async function saveImage() {
-    const W = 1080, H = 1350, cols = 6, pad = 80, gap = 22;
+    const W = 1080, H = 1350, pad = 80;
     const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
     const ctx = cv.getContext('2d');
-    const g = ctx.createLinearGradient(0, 0, W, H); g.addColorStop(0, '#1f3a66'); g.addColorStop(1, '#0f1f3a');
-    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-    const font = '"Noto Sans JP", "Hiragino Sans", sans-serif';
-    ctx.fillStyle = '#a9bbd9'; ctx.font = `700 36px ${font}`; ctx.textBaseline = 'top';
-    ctx.fillText('#' + SITE.hashtag, pad, pad);
+    const font = '"Zen Maru Gothic", "Noto Sans JP", "Hiragino Sans", sans-serif';
+    const total = sum(items);
+    ctx.fillStyle = '#F7F5F0'; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = '#fff'; roundRect(ctx, 50, 50, W - 100, H - 100, 48); ctx.fill();
 
-    const sorted = [...items].sort((a, b) => b.price - a.price);
-    const maxIcons = 23;
-    const shown = sorted.slice(0, sorted.length > maxIcons + 1 ? maxIcons : maxIcons + 1);
-    const size = (W - pad * 2 - gap * (cols - 1)) / cols;
-    const top = pad + 90;
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    const drawTile = (x, y, color, text) => {
-      ctx.fillStyle = color; roundRect(ctx, x, y, size, size, 26); ctx.fill();
-      ctx.fillStyle = '#fff';
-      const len = [...text].length;
-      ctx.font = `900 ${len >= 4 ? 30 : len === 3 ? 36 : 48}px ${font}`;
-      ctx.fillText(text, x + size / 2, y + size / 2 + 2);
-    };
-    // 公式アイコンは CORS で読めたものだけ描く（読めなければ文字アイコン）
+    ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
+    ctx.fillStyle = '#0F766E'; ctx.font = `900 40px ${font}`; ctx.fillText(SITE.name, pad + 30, 160);
+    ctx.fillStyle = '#6E7672'; ctx.font = `700 32px ${font}`; ctx.fillText('わたしの毎月の固定費', pad + 30, 215);
+
+    // 円グラフ
+    const PALETTE = ['#0F766E', '#F0623C', '#14B8A6', '#F5B841', '#6C8EBF', '#B57EDC', '#7FB77E'];
+    const byCat = CATEGORIES.map(c => ({ name: c.name, v: catSum(c.id) })).filter(x => x.v > 0).sort((a, b) => b.v - a.v);
+    const slices = byCat.slice(0, 6).map((x, k) => ({ ...x, color: PALETTE[k] }));
+    const restV = byCat.slice(6).reduce((a, b) => a + b.v, 0);
+    if (restV) slices.push({ name: 'その他', v: restV, color: '#C9C2B3' });
+    const cx = 330, cy = 560, r = 210;
+    let ang = -Math.PI / 2;
+    if (!total) { ctx.fillStyle = '#E6E1D6'; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill(); }
+    slices.forEach(sl => {
+      const d = sl.v / total * Math.PI * 2;
+      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, r, ang, ang + d); ctx.closePath();
+      ctx.fillStyle = sl.color; ctx.fill(); ang += d;
+    });
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(cx, cy, r - 62, 0, Math.PI * 2); ctx.fill();
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#6E7672'; ctx.font = `700 30px ${font}`; ctx.fillText('毎月', cx, cy - 34);
+    ctx.fillStyle = '#134E48'; ctx.font = `900 56px ${font}`; ctx.fillText('¥' + yen(total), cx, cy + 26);
+    ctx.fillStyle = '#6E7672'; ctx.font = `700 28px ${font}`; ctx.fillText(items.length + '件', cx, cy + 72);
+
+    // 凡例
+    ctx.textAlign = 'left';
+    slices.forEach((sl, k) => {
+      const y = 400 + k * 52;
+      ctx.fillStyle = sl.color; roundRect(ctx, 600, y - 22, 26, 26, 6); ctx.fill();
+      ctx.fillStyle = '#4B5551'; ctx.font = `700 28px ${font}`;
+      const name = sl.name.length > 8 ? sl.name.slice(0, 8) + '…' : sl.name;
+      ctx.fillText(name, 640, y);
+      ctx.textAlign = 'right'; ctx.fillStyle = '#134E48'; ctx.fillText('¥' + yen(sl.v), W - pad - 30, y); ctx.textAlign = 'left';
+    });
+
+    // 年額など
+    const stats = [['1年で', total * 12], ['1日あたり', total / 30], ['5年で', total * 60]];
+    stats.forEach(([label, v], k) => {
+      const w = (W - pad * 2 - 60 - 40) / 3, x = pad + 30 + k * (w + 20), y = 840;
+      ctx.fillStyle = '#F0EDE5'; roundRect(ctx, x, y, w, 130, 24); ctx.fill();
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#6E7672'; ctx.font = `700 26px ${font}`; ctx.fillText(label, x + w / 2, y + 50);
+      ctx.fillStyle = '#134E48'; ctx.font = `900 38px ${font}`; ctx.fillText('¥' + yen(v), x + w / 2, y + 100);
+    });
+
+    // アイコン（公式アイコンは CORS で読めたものだけ）
     const loadImg = src => new Promise(res => {
       if (!src) return res(null);
       const im = new Image(); im.crossOrigin = 'anonymous';
       im.onload = () => res(im.naturalWidth > 16 ? im : null); im.onerror = () => res(null);
       im.src = src;
     });
+    const shown = [...items].sort((a, b) => b.price - a.price).slice(0, 10);
     const imgs = await Promise.all(shown.map(it => loadImg(iconOf(it).img)));
+    const size = 70, gap = 14, x0 = (W - (shown.length * size + (shown.length - 1) * gap)) / 2;
     shown.forEach((it, k) => {
-      const ic = iconOf(it);
-      const x = pad + (k % cols) * (size + gap), y = top + Math.floor(k / cols) * (size + gap);
+      const ic = iconOf(it), x = x0 + k * (size + gap), y = 1030;
       if (imgs[k]) {
-        ctx.fillStyle = '#fff'; roundRect(ctx, x, y, size, size, 26); ctx.fill();
-        const p = size * .14;
-        ctx.drawImage(imgs[k], x + p, y + p, size - p * 2, size - p * 2);
-      } else drawTile(x, y, ic.c, ic.t || '');
+        ctx.fillStyle = '#fff'; roundRect(ctx, x, y, size, size, 18); ctx.fill();
+        ctx.strokeStyle = '#E6E1D6'; ctx.lineWidth = 2; ctx.stroke();
+        ctx.drawImage(imgs[k], x + 8, y + 8, size - 16, size - 16);
+      } else {
+        ctx.fillStyle = ic.c; roundRect(ctx, x, y, size, size, 18); ctx.fill();
+        ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.font = `900 ${[...(ic.t || '')].length >= 3 ? 20 : 28}px ${font}`; ctx.fillText(ic.t || '', x + size / 2, y + size / 2 + 1);
+        ctx.textBaseline = 'alphabetic';
+      }
     });
-    if (sorted.length > shown.length) {
-      const k = shown.length;
-      drawTile(pad + (k % cols) * (size + gap), top + Math.floor(k / cols) * (size + gap), 'rgba(255,255,255,.15)', '+' + (sorted.length - shown.length));
-    }
 
-    const total = sum(items);
-    ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
-    ctx.fillStyle = '#a9bbd9'; ctx.font = `700 40px ${font}`; ctx.fillText('月額合計', pad, H - 300);
-    ctx.fillStyle = '#fff'; ctx.font = `900 150px ${font}`; ctx.fillText('¥' + yen(total), pad, H - 150);
-    ctx.fillStyle = '#c9d6ea'; ctx.font = `700 40px ${font}`;
-    ctx.fillText(`年額 ¥${yen(total * 12)}　契約数 ${items.length}件`, pad, H - 80);
-    ctx.textAlign = 'right'; ctx.fillStyle = '#7f93b5'; ctx.font = `700 30px ${font}`;
-    ctx.fillText(SITE.name, W - pad, H - 80);
+    ctx.textAlign = 'center'; ctx.fillStyle = '#0F766E'; ctx.font = `700 28px ${font}`;
+    ctx.fillText('#' + SITE.hashtag, W / 2, H - 110);
 
     const blob = await new Promise(r => cv.toBlob(r, 'image/png'));
-    const file = new File([blob], 'my-subsc.png', { type: 'image/png' });
+    const file = new File([blob], 'subsc-matome.png', { type: 'image/png' });
     if (navigator.canShare?.({ files: [file] })) {
       try { await navigator.share({ files: [file], text: shareText() + ' #' + SITE.hashtag }); return; } catch { /* キャンセル時はダウンロードへ */ }
     }
     const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob); a.download = 'my-subsc.png'; a.click();
+    a.href = URL.createObjectURL(blob); a.download = 'subsc-matome.png'; a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 2000);
     toast('画像を保存しました');
   }
@@ -535,7 +553,7 @@
 
   // ---------- 料金一覧 ----------
   function renderPrices() {
-    $('#priceTables').innerHTML = CATEGORIES.map(c => `<details><summary>${esc(c.name)}　<small style="color:var(--sub);font-weight:400">${c.items.length}サービス</small></summary>
+    $('#priceTables').innerHTML = CATS.map(c => `<details><summary>${esc(c.name)}　<small style="color:var(--sub);font-weight:400">${c.items.length}サービス</small></summary>
       <div class="ptable"><table>${c.items.map(s => `<tr><td>${esc(s.n)}</td><td>${s.p.map(p => esc(p[0])).join('<br>')}</td><td>${s.p.map(p => '¥' + yen(p[1])).join('<br>')}</td></tr>`).join('')}</table></div></details>`).join('');
   }
 
@@ -569,7 +587,7 @@
   $('#btnCatAll').onclick = openCategories;
   $('#btnMenu').onclick = openCategories;
   $('#btnShareSite').onclick = async () => {
-    const data = { title: SITE.name, text: 'サブスクの月額合計をタップで計算できるサイト', url: location.href };
+    const data = { title: SITE.name, text: 'サブスクと固定費の毎月の合計がわかる無料ツール', url: location.href };
     if (navigator.share) { try { await navigator.share(data); } catch { } return; }
     try { await navigator.clipboard.writeText(location.href); toast('URLをコピーしました'); } catch { toast(location.href); }
   };

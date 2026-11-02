@@ -9,7 +9,7 @@
  */
 const CATEGORIES = [
   {
-    id: 'video', name: '動画・スポーツ', items: [
+    id: 'video', name: '動画・スポーツ', emoji: '🎬', items: [
       { id: 'amazonprime', n: 'Amazonプライム', c: '#1A98FF', t: 'prime', p: [['月間プラン', 600], ['年間プラン（月割り）', 492], ['Prime Student 月間', 300], ['Prime Student 年間（月割り）', 246]] },
       { id: 'primechannel', n: 'Prime Video\nチャンネル', c: '#1A98FF', t: 'ch', multi: true, p: [['dアニメ ニコニコチャンネル', 550], ['シネフィルWOWOW', 550], ['スターチャンネルEX', 1100], ['ABEMA', 1180]] },
       { id: 'youtubepremium', n: 'YouTube Premium', c: '#FF0000', t: '▶', p: [['個人', 1280], ['個人 年額（月割り）', 1067], ['ファミリー', 2280], ['学生', 780], ['Premium Lite', 780], ['個人（App Store）', 1680]] },
@@ -43,7 +43,7 @@ const CATEGORIES = [
     ]
   },
   {
-    id: 'music', name: '音楽', items: [
+    id: 'music', name: '音楽', emoji: '🎧', items: [
       { id: 'spotify', n: 'Spotify', c: '#1DB954', t: '♪', p: [['Standard', 1080], ['Student', 580], ['Duo', 1480], ['Family', 1880]] },
       { id: 'applemusic', n: 'Apple Music', c: '#FA243C', t: '♫', p: [['個人', 1180], ['個人 年額（月割り）', 983], ['学生', 680], ['ファミリー', 1980]] },
       { id: 'amazonmusic', n: 'Amazon Music', c: '#25D1DA', t: '♪', p: [['Unlimited 個人', 1180], ['Unlimited プライム会員', 1080], ['学生', 580], ['ファミリー', 1980]] },
@@ -58,7 +58,7 @@ const CATEGORIES = [
     ]
   },
   {
-    id: 'ai', name: 'AI', items: [
+    id: 'ai', name: 'AI・生成AI', emoji: '🤖', items: [
       { id: 'chatgpt', n: 'ChatGPT', c: '#10A37F', t: 'GPT', p: [['Go', 1400], ['Plus', 3000], ['Pro', 30000]] },
       { id: 'claude', n: 'Claude', c: '#D97757', t: 'C', p: [['Pro', 3000], ['Pro 年額（月割り）', 2700], ['Max 5x', 17800], ['Max 20x', 35600]] },
       { id: 'gemini', n: 'Gemini\n（Google AI）', c: '#4285F4', t: '✦', p: [['Google AI Plus', 725], ['Google AI Pro', 2900], ['Google AI Ultra', 14500], ['学生', 720]] },
@@ -76,7 +76,7 @@ const CATEGORIES = [
     ]
   },
   {
-    id: 'cloud', name: 'クラウド・ストレージ', items: [
+    id: 'cloud', name: 'クラウド・保存', emoji: '☁️', items: [
       { id: 'icloud', n: 'iCloud+', c: '#3693F3', t: '☁', p: [['50GB', 180], ['200GB', 540], ['2TB', 1800], ['6TB', 5500], ['12TB', 11000]] },
       { id: 'googleone', n: 'Google One', c: '#4285F4', t: '1', p: [['100GB', 290], ['100GB 年額（月割り）', 242], ['2TB', 1450], ['5TB（AI Pro）', 2900]] },
       { id: 'googlephotos', n: 'Google フォト', c: '#FBBC04', t: '✿', p: [['100GB', 290], ['2TB', 1450]] },
@@ -92,7 +92,7 @@ const CATEGORIES = [
     ]
   },
   {
-    id: 'book', name: '本・雑誌・音声', items: [
+    id: 'book', name: '読書・マンガ・ニュース', emoji: '📚', items: [
       { id: 'kindleu', n: 'Kindle Unlimited', c: '#232F3E', t: 'K', p: [['月額プラン', 980]] },
       { id: 'audible', n: 'Audible', c: '#F7991C', t: 'A', p: [['プレミアム', 1500], ['スタンダード', 880]] },
       { id: 'radiko', n: 'radikoプレミアム', c: '#00A0E9', t: 'r', p: [['エリアフリー', 385], ['タイムフリー30', 480], ['ダブルプラン', 865]] },
@@ -119,7 +119,7 @@ const CATEGORIES = [
     ]
   },
   {
-    id: 'game', name: 'ゲーム', items: [
+    id: 'game', name: 'ゲーム', emoji: '🎮', items: [
       { id: 'nso', n: 'Nintendo Switch\nOnline', c: '#E60012', t: 'NS', p: [['個人 12か月（月割り）', 200], ['個人 1か月', 306], ['追加パック 個人（月割り）', 408], ['ファミリー（月割り）', 375]] },
       { id: 'psplus', n: 'PlayStation Plus', c: '#003791', t: 'PS', p: [['エッセンシャル', 850], ['エクストラ', 1300], ['プレミアム', 1550]] },
       { id: 'gamepass', n: 'Xbox Game Pass', c: '#107C10', t: 'X', p: [['Essential', 1250], ['Premium', 1850], ['Ultimate', 2750], ['PC Game Pass', 1650]] },
@@ -137,7 +137,7 @@ const CATEGORIES = [
     ]
   },
   {
-    id: 'learn', name: '学び・健康', items: [
+    id: 'learn', name: '学習・ヘルスケア', emoji: '✏️', items: [
       { id: 'duolingo', n: 'Duolingo', c: '#58CC02', t: 'Du', p: [['Super 月額', 1500], ['Super 年額（月割り）', 750], ['Max', 2500]] },
       { id: 'studysapuri', n: 'スタディサプリ', c: '#FF6E00', t: 'サ', p: [['高校・大学受験', 2178], ['小・中学講座', 2178], ['ENGLISH', 3278]] },
       { id: 'asken', n: 'あすけん\nプレミアム', c: '#00B050', t: 'あ', p: [['月額', 480]] },
@@ -158,7 +158,7 @@ const CATEGORIES = [
     ]
   },
   {
-    id: 'gym', name: 'ジム・ピラティス・ヨガ', items: [
+    id: 'gym', name: 'フィットネス', emoji: '🏃', items: [
       { id: 'anytime', n: 'エニタイム\nフィットネス', c: '#5B2C83', t: 'AF', p: [['月会費（店舗により異なる）', 7678], ['月会費（都心店）', 8778]] },
       { id: 'chocozap', n: 'chocoZAP', c: '#FFD400', t: 'ch', p: [['月額', 3278]] },
       { id: 'central', n: 'セントラル\nスポーツ', c: '#E60012', t: 'C', p: [['マスター会員', 11000], ['デイタイム会員', 8800]] },
@@ -177,7 +177,7 @@ const CATEGORIES = [
     ]
   },
   {
-    id: 'money', name: 'お金・家計', items: [
+    id: 'money', name: '家計簿・会計', emoji: '💴', items: [
       { id: 'moneyforward', n: 'マネーフォワード\nME', c: '#F46A00', t: 'MF', p: [['スタンダード', 480], ['プレミアム', 550]] },
       { id: 'zaim', n: 'くふう Zaim', c: '#E83E3E', t: 'Z', p: [['プレミアム', 480]] },
       { id: 'rakutenkakeibo', n: '楽天家計簿', c: '#BF0000', t: 'R', p: [['プレミアム', 500]] },
@@ -190,7 +190,7 @@ const CATEGORIES = [
     ]
   },
   {
-    id: 'tool', name: 'ツール・パッケージ', items: [
+    id: 'tool', name: 'アプリ・ソフト', emoji: '🧰', items: [
       { id: 'm365', n: 'Microsoft 365', c: '#D83B01', t: 'M', p: [['Personal', 2130], ['Personal 年額（月割り）', 1775], ['Family', 2740]] },
       { id: 'applecare', n: 'AppleCare+', c: '#555', t: '', multi: true, p: [['iPhone 盗難・紛失', 1480], ['iPhone', 1180], ['Mac', 1400], ['iPad', 700]] },
       { id: 'xpremium', n: 'X Premium', c: '#000', t: 'X', p: [['Basic', 368], ['Premium', 980], ['Premium+', 6080]] },
@@ -212,7 +212,7 @@ const CATEGORIES = [
     ]
   },
   {
-    id: 'shop', name: 'ショッピング・会員', items: [
+    id: 'shop', name: '買い物・宅配・会員', emoji: '🛒', items: [
       { id: 'rakutenpremium', n: '楽天プレミアム\n会員', c: '#BF0000', t: 'R', p: [['年額（月割り）', 325]] },
       { id: 'yahoopremium', n: 'LYPプレミアム\n（Yahoo!）', c: '#FF0033', t: 'Y!', p: [['月額', 650]] },
       { id: 'costco', n: 'コストコ', c: '#E31837', t: 'CO', p: [['ゴールドスター（月割り）', 404], ['エグゼクティブ（月割り）', 808]] },
@@ -237,7 +237,7 @@ const CATEGORIES = [
     ]
   },
   {
-    id: 'oshi', name: '推し・FC・メンバーシップ', items: [
+    id: 'oshi', name: '推し活・ファンクラブ', emoji: '💖', items: [
       { id: 'oshi', n: '推し', c: '#F472B6', t: '♡', multi: true, p: [['〜1,000円', 1000], ['〜3,000円', 3000], ['〜5,000円', 5000], ['〜10,000円', 10000], ['〜30,000円', 30000]] },
       { id: 'fanclub', n: 'ファンクラブ', c: '#E11D48', t: 'FC', multi: true, p: [['年会費4,000円（月割り）', 333], ['年会費6,000円（月割り）', 500], ['月額330円', 330], ['月額550円', 550], ['月額1,100円', 1100]] },
       { id: 'membership', n: 'メンバーシップ', c: '#A855F7', t: 'M', multi: true, p: [['〜500円', 500], ['〜1,000円', 1000], ['〜3,000円', 3000]] },
@@ -251,7 +251,7 @@ const CATEGORIES = [
     ]
   },
   {
-    id: 'fixed', name: 'ほかの固定費', desc: '家計をまるっと見直すなら、ここも選んでね', items: [
+    id: 'fixed', name: '暮らしの固定費', emoji: '🏠', desc: '家賃や光熱費も足すと、毎月出ていくお金の全体像がつかめます', items: [
       { id: 'rent', n: '家賃', c: '#475569', t: '家', p: [['〜5万円', 50000], ['〜7万円', 70000], ['〜10万円', 100000], ['〜15万円', 150000]] },
       { id: 'mortgage', n: '住宅ローン', c: '#334155', t: '家', p: [['〜8万円', 80000], ['〜10万円', 100000], ['〜15万円', 150000]] },
       { id: 'electric', n: '電気', c: '#F59E0B', t: '⚡', p: [['〜5,000円', 5000], ['〜10,000円', 10000], ['〜15,000円', 15000], ['〜20,000円', 20000]] },
@@ -270,7 +270,7 @@ const CATEGORIES = [
     ]
   },
   {
-    id: 'net', name: 'ネット回線・ホームルーター', items: [
+    id: 'net', name: '光回線・Wi-Fi', emoji: '🌐', desc: '見直しレポートで、今よりお得な回線を探せます', items: [
       { id: 'docomohikari', n: 'ドコモ光', c: '#CC0033', t: 'd光', p: [['マンション', 4400], ['戸建て', 5720]] },
       { id: 'auhikari', n: 'auひかり', c: '#EB5505', t: 'au', p: [['マンション', 4180], ['戸建て', 5610]] },
       { id: 'sbhikari', n: 'ソフトバンク光', c: '#999', t: 'SB', p: [['マンション', 4180], ['戸建て', 5720]] },
@@ -290,7 +290,7 @@ const CATEGORIES = [
     ]
   },
   {
-    id: 'mobile', name: 'スマホ代', required: true, note: '（端末代除く）', items: [
+    id: 'mobile', name: 'スマホ・携帯', emoji: '📱', desc: '月々の通信料（端末の分割代は除く）。家族払いなら「家族が払っている」を選択', items: [
       { id: 'docomo', n: 'docomo', c: '#CC0033', t: 'd', multi: true, p: [['ドコモ MAX', 8448], ['ドコモ mini 4GB', 2750], ['ドコモ mini 10GB', 3850], ['eximo', 7315, '', true], ['家族が払っている', 0]] },
       { id: 'au', n: 'au', c: '#EB5505', t: 'au', multi: true, p: [['使い放題MAX+ 5G', 8008], ['スマホミニプラン+', 4048], ['家族が払っている', 0]] },
       { id: 'softbank', n: 'SoftBank', c: '#999', t: 'SB', multi: true, p: [['ペイトク無制限', 9625], ['ペイトク50', 8525], ['ミニフィットプラン+', 3828], ['家族が払っている', 0]] },
