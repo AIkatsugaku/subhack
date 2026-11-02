@@ -33,7 +33,6 @@ const MEMBERSHIP = {
   price: 400,
   features: [
     'LINEでいつでも・何度でも相談できる',
-    '月1回のWeb個別相談（30分）',
     'あなた専用の見直しプランを作成',
   ],
   joinUrl: '',
