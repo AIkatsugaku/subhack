@@ -43,9 +43,9 @@ function buildMember({ items, SVC, yen, esc, icoHTML, iconOf }) {
     </div>
 
     <div class="panel consult">
-      <h3>💬 プロに相談する</h3>
-      <p class="mb-lead">「どれを解約すればいい？」「もっと安くできる？」など、いまの内容をそのまま送って相談できます。</p>
-      <button class="btn line big" id="mbConsult" type="button">LINEで無料相談する</button>
+      <h3>💬 LINEでいつでも無料相談</h3>
+      <p class="mb-lead">「どれを解約すればいい？」「もっと安くできる？」など、いまの内容をそのまま送って<b>何度でも無料</b>で相談できます。</p>
+      <button class="btn line big" id="mbConsult" type="button">LINEで無料相談する（何度でも0円）</button>
       <div class="premium">
         <div class="premium-head"><span class="premium-badge">有料会員</span><b>${esc(m.name)}</b></div>
         <div class="premium-price">月額 <b>¥${yen(m.price)}</b><small>（税込）</small></div>
