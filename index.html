@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>サブスク月額の合計を計算｜タップするだけで自動計算｜サブスクまとめ</title>
+<meta name="description" content="使っているサブスクをタップするだけで月額・年額の合計を自動計算。動画・音楽・AI・ゲーム・推し活・スマホ代まで240以上のサービスに対応。">
+<meta property="og:title" content="サブスク・推し活 月いくら？｜サブスクまとめ">
+<meta property="og:description" content="タップするだけ。サブスクの月額合計を自動計算。">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#ffffff">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="hdr">
+  <a class="brand" href="#top">
+    <span class="brand-mark">¥</span>
+    <span class="brand-name">サブスクまとめ</span>
+  </a>
+  <nav class="hdr-actions">
+    <button class="hdr-btn" id="btnShareSite" type="button">
+      <svg viewBox="0 0 24 24"><path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>
+      <span>シェア</span>
+    </button>
+    <button class="hdr-btn" id="btnMenu" type="button">
+      <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      <span>メニュー</span>
+    </button>
+  </nav>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="hero-text">
+      <h1><span class="h1-sm">サブスク・推し活</span><span class="h1-lg">月いくら？</span></h1>
+      <p class="hero-lead">タップするだけ。<br>月額合計を自動計算。</p>
+      <p class="hero-count"><b id="serviceCount">240</b>以上のサービスに対応</p>
+    </div>
+    <div class="hero-visual" aria-hidden="true">
+      <div class="mini-card">
+        <div class="mini-tag">#わたしのサブスク</div>
+        <div class="mini-grid">
+          <i style="background:#111">N</i><i style="background:#1DB954">♪</i><i style="background:#FF0000">▶</i>
+          <i style="background:#10A37F">GPT</i><i style="background:#1A98FF">prime</i><i style="background:#F472B6">♡</i>
+        </div>
+        <div class="mini-total">¥7,730<small>/月</small></div>
+      </div>
+      <div class="badge-round"><small>対応サービス</small><b>240+</b></div>
+    </div>
+  </section>
+
+  <div class="search-wrap">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <input id="search" type="search" placeholder="サービス名で探す（例：Netflix、ジム）" autocomplete="off">
+  </div>
+
+  <nav class="chips-wrap" id="chipsWrap">
+    <button class="chip-all" id="btnCatAll" type="button" aria-label="カテゴリ一覧">
+      <svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg>
+    </button>
+    <div class="chips" id="chips"></div>
+  </nav>
+
+  <div id="catalog"></div>
+
+  <div class="noresult" id="noResult" hidden>
+    見つかりませんでした。<br>各カテゴリの「その他を追加」から自由に登録できます。
+  </div>
+
+  <div class="request">
+    使っているサービスが見つからない？<br>
+    <span>各カテゴリの「その他を追加」で、名前と金額を入れて登録できます。</span>
+  </div>
+
+  <section class="content" id="howto">
+    <h2>契約中のサブスクの確認方法</h2>
+    <p>サブスクは申し込み先がばらばらなので、契約していること自体を忘れがちです。次の場所を順番にチェックすると、払いっぱなしのサブスクが見つかります。</p>
+    <ol class="steps">
+      <li><b>iPhone・iPad</b><span>設定 → 自分の名前 → サブスクリプション</span></li>
+      <li><b>Android</b><span>Google Play ストア → プロフィール → お支払いと定期購入 → 定期購入</span></li>
+      <li><b>Amazon</b><span>アカウントサービス → メンバーシップおよび購読</span></li>
+      <li><b>クレジットカード・銀行の明細</b><span>3〜6か月分をさかのぼると年払いも見つかります</span></li>
+      <li><b>携帯料金の明細</b><span>キャリア決済や家族の契約もまとめて確認</span></li>
+    </ol>
+  </section>
+
+  <section class="content" id="prices">
+    <h2>サブスクの料金一覧</h2>
+    <p>このサイトに登録されているサービスの月額料金（税込・目安）です。年払いプランは12で割った月割り額。最新の料金は各公式サイトでご確認ください。</p>
+    <div id="priceTables"></div>
+  </section>
+
+  <section class="content" id="faq">
+    <h2>よくある質問</h2>
+    <details><summary>入力したデータはどこかに送信されますか？</summary><p>いいえ。選んだサブスクはお使いのブラウザの中だけに保存され、サーバーには送信されません。</p></details>
+    <details><summary>年払いのサブスクはどう入れればいいですか？</summary><p>「年額（月割り）」のプランを選ぶか、「リストにないプラン・金額」で年額を入力すると自動で12で割って計算します。</p></details>
+    <details><summary>同じサービスを複数登録できますか？</summary><p>右上に「＋」があるタイル（推し・ファンクラブ・ジムなど）は何件でも追加できます。</p></details>
+    <details><summary>データを消したいときは？</summary><p>「リスト確認・編集」を開き、いちばん下の「すべてリセット」を押してください。</p></details>
+  </section>
+
+  <footer class="ftr">
+    <p>※本サイトはアフィリエイトプログラムを利用しています。「PR」表記のリンクから申し込みがあった場合、運営者に報酬が支払われることがあります。</p>
+    <p>※掲載の料金は目安です。最新の料金・条件は各サービスの公式サイトでご確認ください。各サービス名は各社の商標です。</p>
+    <p class="copy">© <span id="year"></span> サブスクまとめ</p>
+  </footer>
+</main>
+
+<!-- 吹き出しガイド -->
+<div class="guide" id="guide">
+  <span>使ってるサブスクをタップしてね！</span>
+  <button type="button" id="guideClose" aria-label="閉じる">×</button>
+</div>
+
+<!-- 下部の合計バー -->
+<div class="bar" id="bar">
+  <div class="bar-inner">
+    <button class="bar-list" id="btnList" type="button">
+      <span class="bar-box" id="barIcons"><span class="bar-empty"></span></span>
+      <span class="bar-label">リスト確認・編集</span>
+      <span class="bar-badge" id="barBadge" hidden>0</span>
+    </button>
+    <span class="bar-arrows" aria-hidden="true">›››</span>
+    <button class="bar-total" id="btnCard" type="button">
+      <span class="bar-box bar-sum" id="barSum"><small>¥</small><b>- ---</b><small>/月</small></span>
+      <span class="bar-label">合計カードを見る</span>
+    </button>
+  </div>
+</div>
+
+<!-- ボトムシート -->
+<div class="sheet-bg" id="sheetBg"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true">
+  <button class="sheet-close" id="sheetClose" type="button" aria-label="閉じる">×</button>
+  <div class="sheet-handle"></div>
+  <div class="sheet-body" id="sheetBody"></div>
+</div>
+
+<!-- 合計カード画面 -->
+<div class="result" id="result" hidden>
+  <div class="result-top">
+    <button class="result-back" id="resultBack" type="button">‹ もどる</button>
+    <span>合計カード</span>
+    <span></span>
+  </div>
+  <div class="result-body" id="resultBody"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="config.js"></script>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
