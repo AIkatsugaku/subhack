@@ -181,8 +181,16 @@ function buildReport({ items, SVC, icoHTML, iconOf, yen, esc }) {
         <div><small>見直しで浮くかも</small><b>年 ¥${yen(yearly)}</b></div>
         <div><small>カード払いでポイント</small><b>年 ¥${yen(points)}分</b></div>
       </div>
-      ${sections.map(s => `<section class="rp-sec">
-        <h4><span>${s.emoji}</span>${esc(s.title)}</h4>${s.body}</section>`).join('')}
+      <div class="rp-car" id="rpCar">
+        <div class="rp-tabs" role="tablist">${sections.map((s, i) => `<button class="rp-tab${i ? '' : ' on'}" data-slide="${i}" type="button" role="tab">${s.emoji} ${esc(s.title)}</button>`).join('')}</div>
+        <div class="rp-view"><div class="rp-track">${sections.map(s => `<section class="rp-sec rp-slide">
+          <h4><span>${s.emoji}</span>${esc(s.title)}</h4>${s.body}</section>`).join('')}</div></div>
+        <div class="rp-nav">
+          <button class="rp-arrow" data-step="-1" type="button" aria-label="前へ">‹</button>
+          <span class="rp-dots">${sections.map((_, i) => `<i${i ? '' : ' class="on"'}></i>`).join('')}</span>
+          <button class="rp-arrow" data-step="1" type="button" aria-label="次へ">›</button>
+        </div>
+      </div>
       ${hasAff ? '<p class="pr-note">※このレポートは広告（アフィリエイト）を含みます。料金・特典は目安です。最新の条件は各社の公式サイトでご確認ください。</p>'
         : '<p class="pr-note">※料金・特典は目安です。最新の条件は各社の公式サイトでご確認ください。</p>'}
     </div>`;
@@ -195,6 +203,7 @@ function furusatoPref() {
 }
 
 function bindReport(root, { items, yen }) {
+  bindCarousel(root.querySelector('#rpCar'));
   const inc = root.querySelector('#fsInc'), fam = root.querySelector('#fsFam'), out = root.querySelector('#fsOut');
   if (!inc) return;
   // 登録済みのふるさと納税（月割り）を年額に戻す
@@ -214,4 +223,54 @@ function bindReport(root, { items, yen }) {
   };
   inc.onchange = update; fam.onchange = update;
   update();
+}
+
+// ---------- 見直しレポートのカルーセル ----------
+// タブ・矢印・左右スワイプで切り替える。枠の高さは表示中の項目に合わせる
+function bindCarousel(car) {
+  if (!car) return;
+  const view = car.querySelector('.rp-view');
+  const track = car.querySelector('.rp-track');
+  const slides = [...car.querySelectorAll('.rp-slide')];
+  const tabs = [...car.querySelectorAll('.rp-tab')];
+  const dots = [...car.querySelectorAll('.rp-dots i')];
+  const tabBar = car.querySelector('.rp-tabs');
+  let cur = 0;
+  const fit = () => { const h = slides[cur].offsetHeight; if (h) view.style.height = h + 'px'; };
+  const go = i => {
+    cur = Math.max(0, Math.min(slides.length - 1, i));
+    track.style.transition = '';
+    track.style.transform = `translateX(${-cur * 100}%)`;
+    tabs.forEach((t, k) => t.classList.toggle('on', k === cur));
+    dots.forEach((d, k) => d.classList.toggle('on', k === cur));
+    tabBar.scrollLeft = tabs[cur].offsetLeft - tabBar.offsetLeft - (tabBar.clientWidth - tabs[cur].offsetWidth) / 2;
+    fit();
+  };
+  tabs.forEach((t, i) => t.onclick = () => go(i));
+  car.querySelectorAll('[data-step]').forEach(b => b.onclick = () => go(cur + Number(b.dataset.step)));
+
+  // 左右スワイプ（縦スクロールはそのままページに任せる）
+  let x0 = null, y0 = 0, dx = 0, swiping = false;
+  view.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; dx = 0; swiping = false; }, { passive: true });
+  view.addEventListener('touchmove', e => {
+    if (x0 === null) return;
+    dx = e.touches[0].clientX - x0;
+    if (!swiping && Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(e.touches[0].clientY - y0)) swiping = true;
+    if (swiping) {
+      track.style.transition = 'none';
+      track.style.transform = `translateX(calc(${-cur * 100}% + ${dx}px))`;
+    }
+  }, { passive: true });
+  view.addEventListener('touchend', () => {
+    if (swiping) go(cur + (dx < -50 ? 1 : dx > 50 ? -1 : 0));
+    x0 = null; swiping = false;
+  });
+
+  // 中身（ふるさと納税の計算結果・アイコン画像など）が変わったら高さを合わせ直す
+  if (window.ResizeObserver) {
+    const ro = new ResizeObserver(entries => { if (entries.some(e => e.target === slides[cur])) fit(); });
+    slides.forEach(s => ro.observe(s));
+  }
+  addEventListener('resize', fit);
+  go(0);
 }
