@@ -490,3 +490,12 @@ details p, details .ptable { padding: 0 14px 12px; margin: 0; font-size: 13px; }
 /* 見直しの手順をLINEで受け取る */
 .rp-plan { margin-top: 12px; height: 52px; font-size: 15px; }
 .rp-plan-note { margin: 4px 0 0; text-align: center; font-size: 11px; color: var(--sub); }
+
+/* お悩みガイド：LINE登録の案内＋記事は折りたたみ */
+.guide-topics { list-style: none; padding: 0; margin: 0 0 4px; display: flex; flex-wrap: wrap; gap: 6px; }
+.guide-topics li { display: inline-flex; align-items: center; gap: 5px; background: #F2FBF5; border: 1px solid #C9EED6; border-radius: 99px; padding: 5px 12px; font-size: 13px; font-weight: 700; color: var(--ink); }
+.guide-topics li.pick { background: #FFF4EF; border-color: #F6C9B6; }
+.guide-topics em { font-style: normal; font-size: 10px; color: #fff; background: var(--pr); border-radius: 99px; padding: 0 6px; }
+.guide-more { margin-top: 12px; background: transparent; }
+.guide-more summary { font-size: 12px; color: var(--sub); padding: 8px 30px 8px 2px; }
+.guide-more[open] summary { margin-bottom: 6px; }

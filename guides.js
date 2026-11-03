@@ -141,20 +141,30 @@ function buildGuides({ st, esc }) {
     .map(g => ({ g, pick: (() => { try { return g.when !== 'always' && GUIDE_RULES[g.when]?.when(st); } catch { return false; } })() }))
     .sort((a, b) => b.pick - a.pick);
   if (!list.length) return '';
+  // 記事はLINEで配信するので、サイトでは「LINE登録で解決できる悩み」として見せ、記事本体は折りたたむ
   return `<div class="panel guides">
-      <h3>お悩み別ガイド</h3>
-      <p class="guides-lead">固定費の見直しとあわせて読みたい記事です。</p>
-      <div class="guide-cards">
-        ${list.map(({ g, pick }) => `<button class="guide-card${pick ? ' pick' : ''}" data-guide="${esc(g.id)}" type="button">
-          <span class="guide-emoji">${esc(g.emoji || '📄')}</span>
-          <span class="guide-tx">${pick ? '<span class="guide-badge">あなたにおすすめ</span>' : ''}<b>${esc(g.title)}</b><small>${esc(g.lead || '')}</small></span>
-          <span class="guide-go">読む ›</span>
-        </button>`).join('')}
-      </div>
+      <h3>LINEに登録すると、こんな悩みを解決できます</h3>
+      <p class="guides-lead">見直しのコツや申込先を、LINEでお届けします。</p>
+      <ul class="guide-topics">
+        ${list.map(({ g, pick }) => `<li class="${pick ? 'pick' : ''}"><span>${esc(g.emoji || '📄')}</span>${esc(g.title)}${pick ? '<em>あなたにおすすめ</em>' : ''}</li>`).join('')}
+      </ul>
+      <button class="btn line big" type="button" data-guide-add>LINEで友だち追加（無料）</button>
+      <details class="guide-more">
+        <summary>サイトで記事を読む</summary>
+        <div class="guide-cards">
+          ${list.map(({ g, pick }) => `<button class="guide-card${pick ? ' pick' : ''}" data-guide="${esc(g.id)}" type="button">
+            <span class="guide-emoji">${esc(g.emoji || '📄')}</span>
+            <span class="guide-tx">${pick ? '<span class="guide-badge">あなたにおすすめ</span>' : ''}<b>${esc(g.title)}</b><small>${esc(g.lead || '')}</small></span>
+            <span class="guide-go">読む ›</span>
+          </button>`).join('')}
+        </div>
+      </details>
     </div>`;
 }
 
 function bindGuides(root, { openSheet, esc, yen }) {
+  // 友だち追加はLINE登録の欄のボタンと同じ動き（URL未設定なら「準備中」）
+  root.querySelector('[data-guide-add]')?.addEventListener('click', () => root.querySelector('#mbAdd')?.click());
   root.querySelectorAll('[data-guide]').forEach(card => card.onclick = () => {
     const g = GUIDES.find(x => x.id === card.dataset.guide);
     if (!g) return;
