@@ -14,6 +14,17 @@ function buildReport({ items, SVC, icoHTML, iconOf, yen, esc }) {
     ? `<a class="btn pr rp-btn" href="${esc(url)}" target="_blank" rel="sponsored noopener">${esc(label)}<small>PR</small></a>` : '';
   const goto = (cat, label) => `<button class="btn ghost rp-goto" data-goto="${cat}" type="button">${esc(label)}</button>`;
   const svcName = sid => (SVC[sid]?.n || '').replace(/\n/g, '');
+  // 申込リンク（アフィリエイト）が入っている候補を優先して出す
+  const linked = o => (o.url ? 1 : 0);
+  // まだ金額を入れていない人にも、リンクのある候補だけは見せる
+  const linkedList = (list, label) => {
+    const l = list.filter(o => o.url);
+    if (!l.length) return '';
+    return `<p class="rp-sub">${esc(label)}</p>` + l.map(o => `<div class="rp-opt">${icoFor(o)}
+        <div class="rp-main"><b>${esc(o.name || svcName(o.sid))}</b><small>${esc(o.plan || o.point || o.type || '')}</small></div>
+        ${o.price ? `<div class="rp-price">¥${yen(o.price)}<small>/月</small></div>` : ''}
+      </div>${btn(o.url, `${o.name || svcName(o.sid)}を見る`)}`).join('');
+  };
 
   const sections = [];
   let yearly = 0;   // 年間の節約見込み（円）
@@ -24,7 +35,7 @@ function buildReport({ items, SVC, icoHTML, iconOf, yen, esc }) {
     const lines = paid('mobile');
     let body;
     if (!lines.length) {
-      body = `<p class="rp-text">スマホ代を入れると、今より安いプランを探せます。</p>${goto('mobile', 'スマホ代を入れて比較する')}`;
+      body = `<p class="rp-text">スマホ代を入れると、今より安いプランを探せます。</p>${goto('mobile', 'スマホ代を入れて比較する')}${linkedList(REPORT.mobile, '人気の乗り換え先')}`;
     } else {
       const cur = sumOf(lines), per = Math.round(cur / lines.length);
       const mine = new Set(lines.map(l => l.sid));
@@ -35,8 +46,12 @@ function buildReport({ items, SVC, icoHTML, iconOf, yen, esc }) {
       const opts = [0, 1, 2].map(t => REPORT.mobile
         .filter(o => tierOf(o) === t && o.price < per && !mine.has(o.sid))
         .map(o => ({ ...o, tier: TIER[t], save: (per - o.price) * lines.length, match: setMatch(o) }))
-        .sort((a, b) => b.match.length - a.match.length || a.price - b.price)[0])
+        .sort((a, b) => linked(b) - linked(a) || b.match.length - a.match.length || a.price - b.price)[0])
         .filter(Boolean);
+      // リンクのある候補が今より安いのに選ばれていなければ追加する（最大4件）
+      REPORT.mobile
+        .filter(o => o.url && o.price < per && !mine.has(o.sid) && !opts.some(x => x.sid === o.sid && x.plan === o.plan))
+        .forEach(o => { if (opts.length < 4) opts.push({ ...o, tier: TIER[tierOf(o)], save: (per - o.price) * lines.length, match: setMatch(o) }); });
       if (opts.length) yearly += Math.max(...opts.map(o => o.save)) * 12;
       body = `<p class="rp-now">いま <b>¥${yen(cur)}</b>/月${lines.length > 1 ? `（${lines.length}回線・1回線あたり¥${yen(per)}）` : ''}</p>` +
         (opts.length
@@ -58,7 +73,7 @@ function buildReport({ items, SVC, icoHTML, iconOf, yen, esc }) {
     let body;
     const carriers = items.filter(i => i.cat === 'mobile').map(i => i.sid);
     if (!lines.length) {
-      body = `<p class="rp-text">ネット回線を入れると、今お得な回線と比べられます。</p>${goto('net', 'ネット回線を入れて比較する')}`;
+      body = `<p class="rp-text">ネット回線を入れると、今お得な回線と比べられます。</p>${goto('net', 'ネット回線を入れて比較する')}${linkedList(REPORT.net, '人気の光回線')}`;
     } else {
       const cur = sumOf(lines);
       const mine = new Set(lines.map(l => l.sid));
@@ -68,8 +83,8 @@ function buildReport({ items, SVC, icoHTML, iconOf, yen, esc }) {
           const real = Math.round(o.price - (o.cashback || 0) / (o.months || 24));
           return { ...o, real, save: cur - real, match: (o.set || []).filter(s => carriers.includes(s)) };
         })
-        .filter(o => o.save > 0 || o.match.length)
-        .sort((a, b) => b.match.length - a.match.length || b.save - a.save)
+        .filter(o => o.save > 0 || o.match.length || o.url)
+        .sort((a, b) => linked(b) - linked(a) || b.match.length - a.match.length || b.save - a.save)
         .slice(0, 3);
       const best = Math.max(0, ...opts.map(o => o.save));
       yearly += best * 12;
@@ -93,11 +108,11 @@ function buildReport({ items, SVC, icoHTML, iconOf, yen, esc }) {
     const carriers = items.map(i => i.sid);
     let body;
     if (!cur) {
-      body = `<p class="rp-text">電気代を入れると、安くなる電力会社を探せます。</p>${goto('fixed', '電気代を入れて比較する')}`;
+      body = `<p class="rp-text">電気代を入れると、安くなる電力会社を探せます。</p>${goto('fixed', '電気代を入れて比較する')}${linkedList(REPORT.electric, '人気の電力会社')}`;
     } else {
       const opts = REPORT.electric
         .map(o => ({ ...o, save: Math.round(cur * (o.rate || 0)), match: (o.set || []).filter(s => carriers.includes(s)) }))
-        .sort((a, b) => b.match.length - a.match.length || b.save - a.save)
+        .sort((a, b) => linked(b) - linked(a) || b.match.length - a.match.length || b.save - a.save)
         .slice(0, 3);
       const best = Math.max(0, ...opts.map(o => o.save));
       yearly += best * 12;
@@ -121,7 +136,7 @@ function buildReport({ items, SVC, icoHTML, iconOf, yen, esc }) {
     const fee = sumOf(items.filter(i => i.sid === 'annualfee'));
     const cards = REPORT.cards
       .map(c => ({ ...c, match: (c.set || []).filter(has), pt: Math.round(monthly * 12 * c.rate) }))
-      .sort((a, b) => b.match.length - a.match.length || b.rate - a.rate || a.fee - b.fee)
+      .sort((a, b) => linked(b) - linked(a) || b.match.length - a.match.length || b.rate - a.rate || a.fee - b.fee)
       .slice(0, 2);
     if (cards.length) points = cards[0].pt;
     if (fee) yearly += fee * 12;
