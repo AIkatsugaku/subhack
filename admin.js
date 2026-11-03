@@ -168,7 +168,7 @@
 
   // ---------- 画面 ----------
   const TABS = {
-    dash: '📊 ダッシュボード', line: '💬 LINE公式アカウント', member: '⭐ 有料会員', aff: '🔗 アフィリエイト（サービス別）',
+    dash: '📊 ダッシュボード', vault: '🗂 アフィリエイト管理', line: '💬 LINE公式アカウント', member: '⭐ 有料会員', aff: '🔗 アフィリエイト（サービス別）',
     report: '📝 見直しレポート', recs: '📣 おすすめ枠', guides: '📰 お悩みガイド', site: '⚙️ 基本設定',
   };
   const tabLabel = t => TABS[t].replace(/^\S+\s/, '');
@@ -398,6 +398,8 @@
       </div>`;
     },
 
+    vault() { return '<div id="vaultRoot"></div>'; },
+
     site() {
       return `<div class="panel">
         <h2>基本設定</h2>
@@ -418,6 +420,7 @@
   }
 
   function bindView() {
+    if (tab === 'vault') renderVault($('#vaultRoot'), { gh, REPO, BRANCH, getState: () => state, toast, showError, explain, esc });
     const main = $('#main');
     $$('[data-path]', main).forEach(el => {
       el.addEventListener(el.tagName === 'SELECT' || el.type === 'checkbox' ? 'change' : 'input', () => {
@@ -544,7 +547,10 @@
     if (!confirm('保存していない変更を取り消して、最新の設定を読み込みますか？')) return;
     await loadSettings(); render(); toast('最新の設定を読み込みました');
   };
-  addEventListener('beforeunload', e => { if (state && JSON.stringify(state) !== saved) e.preventDefault(); });
+  addEventListener('beforeunload', e => {
+    const vm = renderVault.mem;
+    if ((state && JSON.stringify(state) !== saved) || (vm && vm.data && JSON.stringify(vm.data) !== vm.saved)) e.preventDefault();
+  });
 
   // 保存済みトークンがあれば自動ログイン
   let stored = '';
