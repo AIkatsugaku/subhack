@@ -419,6 +419,7 @@
     $('#editList').onclick = () => { closeResult(); openList(); };
     $$('[data-goto]', $('#resultBody')).forEach(b => b.onclick = () => { closeResult(); jump(b.dataset.goto); });
     bindMember($('#resultBody'), { getItems: () => items, save, yen, SVC, toast });
+    bindReport($('#resultBody'), { items, yen });
   }
 
   // 登録中サービスのうちアフィリエイトURLがあるもの

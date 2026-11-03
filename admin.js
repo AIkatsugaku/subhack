@@ -91,6 +91,8 @@
       const f = await gh(`/repos/${REPO}/contents/${FILE}?ref=${BRANCH}`);
       sha = f.sha;
       state = { ...defaults(), ...JSON.parse(b64decode(f.content)) };
+      // 後から増えたレポートの枠（ふるさと納税など）は初期値で補う
+      Object.entries(clone(REPORT)).forEach(([k, v]) => { if (!Array.isArray(state.REPORT[k])) state.REPORT[k] = v; });
     } catch (e) {
       if (e.status !== 404) throw e;
       sha = null; state = defaults();
@@ -213,7 +215,7 @@
   const views = {
     dash() {
       const affCount = Object.values(state.AFFILIATE || {}).filter(Boolean).length;
-      const reportUrls = ['mobile', 'net', 'electric', 'cards'].reduce((n, k) => n + (state.REPORT[k] || []).filter(o => o.url).length, 0);
+      const reportUrls = ['mobile', 'net', 'electric', 'cards', 'furusato'].reduce((n, k) => n + (state.REPORT[k] || []).filter(o => o.url).length, 0);
       const recUrls = (state.RECOMMENDS || []).filter(r => r.url && r.enabled !== false).length;
       const lineOk = !!(state.LINE.id && state.LINE.addFriendUrl);
       const todos = [
@@ -327,6 +329,9 @@
         <h3>💳 クレジットカード</h3>
         ${table('cards', [{ h: 'カード名', k: 'name' }, { h: '公式ドメイン', k: 'd' }, { h: '色', k: 'c', cls: 'num' }, { h: '文字', k: 't', cls: 'num' }, { h: '年会費', k: 'fee', t: 'num', cls: 'num' }, { h: '還元率%', k: 'rate', t: 'pct', cls: 'num' }, { h: 'ポイント名', k: 'point' }, { h: '補足', k: 'note' }, { h: '相性の説明', k: 'setLabel' }, { h: 'セット', k: 'set', t: 'csv' }, { h: '申込URL', k: 'url', cls: 'wide' }],
           { name: '', d: '', c: '#0F766E', t: '', fee: 0, rate: 0.01, point: '', url: '' })}
+        <h3>🎁 ふるさと納税（ポータルサイト）</h3>
+        ${table('furusato', [{ h: 'サイト名', k: 'name' }, { h: '公式ドメイン', k: 'd' }, { h: '色', k: 'c', cls: 'num' }, { h: '文字', k: 't', cls: 'num' }, { h: '特徴', k: 'point' }, { h: '申込URL', k: 'url', cls: 'wide' }],
+          { name: '', d: '', c: '#E11D48', t: '', point: '', url: '' })}
       </div>`;
     },
 

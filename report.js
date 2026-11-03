@@ -138,7 +138,27 @@ function buildReport({ items, SVC, icoHTML, iconOf, yen, esc }) {
     sections.push({ key: 'card', title: 'クレジットカード', emoji: '💳', body });
   }
 
-  const hasAff = [REPORT.mobile, REPORT.net, REPORT.electric, REPORT.cards].some(l => l.some(o => o.url));
+  // ---------- ふるさと納税 ----------
+  {
+    const pref = furusatoPref();
+    const incomeOpts = FURUSATO_LIMITS.map(([man]) => `<option value="${man}"${pref.inc === man ? ' selected' : ''}>${man === 1000 ? '1,000' : man}万円${man === 1000 ? '以上' : '前後'}</option>`).join('');
+    const famOpts = FURUSATO_FAMILY.map((f, k) => `<option value="${k}"${pref.fam === k ? ' selected' : ''}>${esc(f)}</option>`).join('');
+    const food = items.filter(i => ['rice', 'coop', 'oisix'].includes(i.sid));
+    const body = `<p class="rp-text">実質<b>2,000円</b>の負担で、お米や日用品などの返礼品がもらえる制度です。上限の目安を出してみましょう。</p>
+      <div class="fs-form">
+        <label><span>年収（額面）</span><select id="fsInc"><option value="">選んでください</option>${incomeOpts}</select></label>
+        <label><span>家族構成</span><select id="fsFam">${famOpts}</select></label>
+      </div>
+      <div class="fs-out" id="fsOut"></div>
+      ${food.length ? `<div class="rp-alert">🍚 ${esc(food.map(i => (SVC[i.sid]?.n || i.name || '').replace(/\n/g, '')).join('・'))}（月¥${yen(sumOf(food))}）を払っています。お米や食品を返礼品で受け取れば、その分の出費を減らせます。</div>` : ''}
+      ${(REPORT.furusato || []).map(o => `<div class="rp-opt">${icoFor(o)}
+          <div class="rp-main"><b>${esc(o.name)}</b><small>${esc(o.point || '')}</small></div>
+        </div>${btn(o.url, `${o.name}で返礼品を探す`)}`).join('')}
+      <p class="rp-note">※上限は総務省の目安表（給与収入のみの場合）にもとづく目安です。住宅ローン控除・医療費控除などがあると変わります。正確な額は各ポータルのシミュレーターで確認してください。</p>`;
+    sections.push({ key: 'furusato', title: 'ふるさと納税', emoji: '🎁', body });
+  }
+
+  const hasAff = [REPORT.mobile, REPORT.net, REPORT.electric, REPORT.cards, REPORT.furusato || []].some(l => l.some(o => o.url));
   return `
     <div class="panel rp">
       <h3>あなたの見直しレポート</h3>
@@ -151,4 +171,32 @@ function buildReport({ items, SVC, icoHTML, iconOf, yen, esc }) {
       ${hasAff ? '<p class="pr-note">※このレポートは広告（アフィリエイト）を含みます。料金・特典は目安です。最新の条件は各社の公式サイトでご確認ください。</p>'
         : '<p class="pr-note">※料金・特典は目安です。最新の条件は各社の公式サイトでご確認ください。</p>'}
     </div>`;
+}
+
+// ---------- ふるさと納税の上限シミュレーター ----------
+const FURUSATO_KEY = 'subhack.furusato';
+function furusatoPref() {
+  try { return JSON.parse(localStorage.getItem(FURUSATO_KEY)) || { inc: 0, fam: 0 }; } catch { return { inc: 0, fam: 0 }; }
+}
+
+function bindReport(root, { items, yen }) {
+  const inc = root.querySelector('#fsInc'), fam = root.querySelector('#fsFam'), out = root.querySelector('#fsOut');
+  if (!inc) return;
+  // 登録済みのふるさと納税（月割り）を年額に戻す
+  const donated = items.filter(i => i.sid === 'furusato').reduce((a, b) => a + b.price, 0) * 12;
+  const update = () => {
+    const man = Number(inc.value), k = Number(fam.value);
+    try { localStorage.setItem(FURUSATO_KEY, JSON.stringify({ inc: man, fam: k })); } catch { }
+    if (!man) { out.innerHTML = ''; return; }
+    const limit = FURUSATO_LIMITS.find(([m]) => m === man)[1][k];
+    const rest = Math.max(0, limit - donated);
+    out.innerHTML = `<div class="fs-cards">
+        <div><small>寄付できる上限の目安</small><b>年 ¥${yen(limit)}</b></div>
+        <div><small>返礼品の価値（最大3割）</small><b>約 ¥${yen(limit * 0.3)}</b></div>
+      </div>
+      ${donated ? `<p class="fs-rest">登録中の寄付：年¥${yen(donated)} → <b>あと ¥${yen(rest)}</b> 寄付できます${rest ? '' : '（上限まで使えています）'}</p>` : ''}
+      <p class="fs-rest">自己負担は2,000円。<b>約¥${yen(Math.max(0, limit * 0.3 - 2000))}</b> おトクになる計算です。</p>`;
+  };
+  inc.onchange = update; fam.onchange = update;
+  update();
 }

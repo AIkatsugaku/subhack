@@ -12,7 +12,7 @@ function applySettings(st) {
     Object.entries(st.AFFILIATE).forEach(([k, v]) => { if (v) AFFILIATE[k] = v; });
   }
   if (Array.isArray(st.RECOMMENDS)) RECOMMENDS.splice(0, RECOMMENDS.length, ...st.RECOMMENDS);
-  if (st.REPORT) ['mobile', 'net', 'electric', 'cards'].forEach(k => { if (Array.isArray(st.REPORT[k])) REPORT[k] = st.REPORT[k]; });
+  if (st.REPORT) ['mobile', 'net', 'electric', 'cards', 'furusato'].forEach(k => { if (Array.isArray(st.REPORT[k])) REPORT[k] = st.REPORT[k]; });
 }
 
 // 保存直後でも新しい内容を読むよう、毎回URLを変えて取得する
