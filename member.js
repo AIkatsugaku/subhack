@@ -140,6 +140,9 @@ function bindMember(root, { getItems, save, yen, SVC, toast }) {
     sendLine(text);
   };
 
+  // 見直しレポートの「手順をLINEで受け取る」からも同じ送り方を使う
+  window.subhackSendLine = sendLine;
+
   root.querySelector('#mbAdd').onclick = () => (LINE.addFriendUrl ? openUrl(LINE.addFriendUrl) : needLine());
 
   // 会員の相談：いまの内容を添えて送る

@@ -483,3 +483,10 @@ details p, details .ptable { padding: 0 14px 12px; margin: 0; font-size: 13px; }
 
 /* PRの注記（見出しの横に小さく） */
 .pr-mini { margin-left: 8px; font-family: "Noto Sans JP", sans-serif; font-size: 10px; font-weight: 400; color: var(--sub); vertical-align: middle; letter-spacing: 0; }
+
+/* お得額の帯（カルーセルの各項目の一番上） */
+.rp-hl { background: linear-gradient(135deg, #0F766E, #14B8A6); color: #fff; border-radius: 14px; padding: 12px 14px; font-family: var(--round); font-size: 14px; font-weight: 700; margin-bottom: 10px; box-shadow: 0 8px 18px -12px rgba(15,118,110,.9); }
+.rp-hl b { font-size: 24px; font-weight: 900; margin: 0 3px; color: #FFE08A; font-variant-numeric: tabular-nums; }
+/* 見直しの手順をLINEで受け取る */
+.rp-plan { margin-top: 12px; height: 52px; font-size: 15px; }
+.rp-plan-note { margin: 4px 0 0; text-align: center; font-size: 11px; color: var(--sub); }

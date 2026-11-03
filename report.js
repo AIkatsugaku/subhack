@@ -34,6 +34,9 @@ function buildReport({ items, SVC, icoHTML, iconOf, yen, esc }) {
   const sections = [];
   let yearly = 0;   // 年間の節約見込み（円）
   let points = 0;   // 年間のポイント見込み（円相当）
+  const plan = [];  // 見直しの手順（LINEで送る用）：{ label, text, note, year, url }
+  // カルーセルの各項目の一番上に出す、お得額の目立つ帯
+  const hl = html => `<div class="rp-hl">💰 ${html}</div>`;
 
   // ---------- スマホ ----------
   if (on('mobile')) {
@@ -57,8 +60,14 @@ function buildReport({ items, SVC, icoHTML, iconOf, yen, esc }) {
       pool('mobile', cur)
         .filter(o => o.url && o.price < per && !mine.has(o.sid) && !opts.some(x => x.sid === o.sid && x.plan === o.plan))
         .forEach(o => { if (opts.length < 4) opts.push({ ...o, tier: TIER[tierOf(o)], save: (per - o.price) * lines.length, match: setMatch(o) }); });
-      if (opts.length) yearly += Math.max(...opts.map(o => o.save)) * 12;
-      body = `<p class="rp-now">いま <b>¥${yen(cur)}</b>/月${lines.length > 1 ? `（${lines.length}回線・1回線あたり¥${yen(per)}）` : ''}</p>` +
+      const bestSave = opts.length ? Math.max(...opts.map(o => o.save)) : 0;
+      yearly += bestSave * 12;
+      if (opts.length) {
+        const b = opts.find(o => o.url) || [...opts].sort((x, y) => y.save - x.save)[0];
+        plan.push({ label: 'スマホ', text: `${svcName(b.sid)}（${b.plan}）に乗り換える`, note: `月¥${yen(b.save)}安い`, year: b.save * 12, url: b.url });
+      }
+      body = (bestSave ? hl(`乗り換えで年間 最大<b>¥${yen(bestSave * 12)}</b>安くなる見込み`) : '') +
+        `<p class="rp-now">いま <b>¥${yen(cur)}</b>/月${lines.length > 1 ? `（${lines.length}回線・1回線あたり¥${yen(per)}）` : ''}</p>` +
         (opts.length
           ? opts.map(o => `<div class="rp-opt">
               ${icoFor(o)}
@@ -66,7 +75,7 @@ function buildReport({ items, SVC, icoHTML, iconOf, yen, esc }) {
                 ${o.match.length ? `<span class="rp-tag">${esc(o.match.map(svcName).join('・'))}とセットで相性◎</span>` : ''}</div>
               <div class="rp-price">¥${yen(o.price)}<small>/月</small><em>月¥${yen(o.save)}安い</em></div>
             </div>${btn(o.url, `${svcName(o.sid)}に申し込む`)}`).join('') +
-            `<p class="rp-note">※毎月使うデータ量に合うものを選んでください。乗り換えで年間 <b>最大¥${yen(Math.max(...opts.map(o => o.save)) * 12)}</b> 安くなる見込みです。</p>`
+            `<p class="rp-note">※毎月使うデータ量に合うものを選んでください。</p>`
           : `<p class="rp-text">今のスマホ代はすでに安い水準です。このままで大丈夫そうです。</p>`);
     }
     sections.push({ key: 'mobile', title: 'スマホ', emoji: '📱', body });
@@ -93,7 +102,10 @@ function buildReport({ items, SVC, icoHTML, iconOf, yen, esc }) {
         .slice(0, 3);
       const best = Math.max(0, ...opts.map(o => o.save));
       yearly += best * 12;
-      body = `<p class="rp-now">いま <b>¥${yen(cur)}</b>/月</p>` +
+      const b = opts[0];
+      if (b && (b.save > 0 || b.url)) plan.push({ label: '光回線', text: `${b.name}に乗り換える`, note: b.save > 0 ? `月¥${yen(b.save)}安い` : '', year: Math.max(0, b.save) * 12, url: b.url });
+      body = (best ? hl(`今なら年間 最大<b>¥${yen(best * 12)}</b>お得になる見込み`) : '') +
+        `<p class="rp-now">いま <b>¥${yen(cur)}</b>/月</p>` +
         (opts.length
           ? opts.map(o => `<div class="rp-opt">
               ${icoFor(o)}
@@ -101,7 +113,7 @@ function buildReport({ items, SVC, icoHTML, iconOf, yen, esc }) {
                 ${o.match.length ? `<span class="rp-tag">${esc(o.match.map(svcName).join('・'))}とのセット割の対象</span>` : ''}</div>
               <div class="rp-price">¥${yen(o.real)}<small>/月${o.cashback ? '（実質）' : ''}</small>${o.save > 0 ? `<em>月¥${yen(o.save)}安い</em>` : ''}</div>
             </div>${btn(o.url, `${o.name}を見る`)}`).join('') +
-            (best ? `<p class="rp-note">※実質月額＝月額−キャッシュバック÷${REPORT.net[0]?.months || 24}か月。今なら年間 <b>最大¥${yen(best * 12)}</b> お得になる見込みです。</p>` : '')
+            (opts.some(o => o.cashback) ? `<p class="rp-note">※実質月額＝月額−キャッシュバック÷${REPORT.net[0]?.months || 24}か月。</p>` : '')
           : `<p class="rp-text">今の回線は十分お得な水準です。</p>`);
     }
     sections.push({ key: 'net', title: '光回線・ネット', emoji: '🌐', body });
@@ -121,7 +133,10 @@ function buildReport({ items, SVC, icoHTML, iconOf, yen, esc }) {
         .slice(0, 3);
       const best = Math.max(0, ...opts.map(o => o.save));
       yearly += best * 12;
-      body = `<p class="rp-now">いま <b>¥${yen(cur)}</b>/月（年¥${yen(cur * 12)}）</p>` +
+      const b = opts[0];
+      if (b && (b.save > 0 || b.url)) plan.push({ label: '電気', text: `${b.name}で料金を試算する`, note: b.save > 0 ? `月¥${yen(b.save)}安い見込み` : '', year: b.save * 12, url: b.url });
+      body = (best ? hl(`切り替えで年間 最大<b>¥${yen(best * 12)}</b>安くなる見込み`) : '') +
+        `<p class="rp-now">いま <b>¥${yen(cur)}</b>/月（年¥${yen(cur * 12)}）</p>` +
         opts.map(o => `<div class="rp-opt">
             ${icoFor(o)}
             <div class="rp-main"><b>${esc(o.name)}</b><small>${esc(o.point || '')}</small>
@@ -145,7 +160,9 @@ function buildReport({ items, SVC, icoHTML, iconOf, yen, esc }) {
       .slice(0, 2);
     if (cards.length) points = cards[0].pt;
     if (fee) yearly += fee * 12;
-    const body = `<p class="rp-now">カードで払える毎月の支払い <b>¥${yen(monthly)}</b>/月（年¥${yen(monthly * 12)}）</p>` +
+    if (cards.length) plan.push({ label: 'カード', text: `${cards[0].name}で固定費を払う`, note: `年¥${yen(cards[0].pt)}分のポイント${fee ? `・年会費¥${yen(fee * 12)}が浮く` : ''}`, year: fee * 12, url: cards[0].url });
+    const body = (cards.length && cards[0].pt ? hl(`カード払いで年間<b>¥${yen(cards[0].pt)}分</b>のポイント`) : '') +
+      `<p class="rp-now">カードで払える毎月の支払い <b>¥${yen(monthly)}</b>/月（年¥${yen(monthly * 12)}）</p>` +
       (fee ? `<div class="rp-alert">年会費のかかるカードがあります（年¥${yen(fee * 12)}）。年会費無料のカードにまとめると、その分がまるごと浮きます。</div>` : '') +
       cards.map((c, idx) => `<div class="rp-opt">
           ${icoFor(c)}
@@ -164,6 +181,8 @@ function buildReport({ items, SVC, icoHTML, iconOf, yen, esc }) {
     const incomeOpts = FURUSATO_LIMITS.map(([man]) => `<option value="${man}"${pref.inc === man ? ' selected' : ''}>${man === 1000 ? '1,000' : man}万円${man === 1000 ? '以上' : '前後'}</option>`).join('');
     const famOpts = FURUSATO_FAMILY.map((f, k) => `<option value="${k}"${pref.fam === k ? ' selected' : ''}>${esc(f)}</option>`).join('');
     const food = items.filter(i => ['rice', 'coop', 'oisix'].includes(i.sid));
+    const portal = pool('furusato', 0).find(o => o.url);
+    if (portal) plan.push({ label: 'ふるさと納税', text: `${portal.name}で返礼品を選ぶ`, note: '実質2,000円の負担', year: 0, url: portal.url });
     const body = `<p class="rp-text">実質<b>2,000円</b>の負担で、お米や日用品などの返礼品がもらえる制度です。上限の目安を出してみましょう。</p>
       <div class="fs-form">
         <label><span>年収（額面）</span><select id="fsInc"><option value="">選んでください</option>${incomeOpts}</select></label>
@@ -178,6 +197,11 @@ function buildReport({ items, SVC, icoHTML, iconOf, yen, esc }) {
     sections.push({ key: 'furusato', title: 'ふるさと納税', emoji: '🎁', body });
   }
 
+  // 浮く金額が大きい順に並べる（同じならリンクのあるものを先に）
+  plan.sort((a, b) => b.year - a.year || (b.url ? 1 : 0) - (a.url ? 1 : 0));
+  buildReport.plan = plan;
+  buildReport.meta = { total: sumOf(items), yearly, points };
+
   return `
     <div class="panel rp">
       <h3>あなたの見直しレポート<span class="pr-mini">※PRを含みます</span></h3>
@@ -185,6 +209,8 @@ function buildReport({ items, SVC, icoHTML, iconOf, yen, esc }) {
         <div><small>見直しで浮くかも</small><b>年 ¥${yen(yearly)}</b></div>
         <div><small>カード払いでポイント</small><b>年 ¥${yen(points)}分</b></div>
       </div>
+      ${plan.length ? `<button class="btn line rp-plan" id="rpPlan" type="button">📩 何から見直す？手順をLINEで受け取る</button>
+        <p class="rp-plan-note">浮く金額が大きい順に${plan.length}つの手順と申込先をまとめて送ります</p>` : ''}
       <div class="rp-car" id="rpCar">
         <div class="rp-tabs" role="tablist">${sections.map((s, i) => `<button class="rp-tab${i ? '' : ' on'}" data-slide="${i}" type="button" role="tab">${s.emoji} ${esc(s.title)}</button>`).join('')}</div>
         <div class="rp-view"><div class="rp-track">${sections.map(s => `<section class="rp-sec rp-slide">
@@ -207,6 +233,25 @@ function furusatoPref() {
 
 function bindReport(root, { items, yen }) {
   bindCarousel(root.querySelector('#rpCar'));
+  // 見直しの手順をLINEで送る（各手順の申込先はアフィリエイトリンク）
+  root.querySelector('#rpPlan')?.addEventListener('click', () => {
+    const { plan, meta } = buildReport;
+    const num = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧'];
+    const text = [
+      '【サブハックの見直しプラン】',
+      `いまの固定費：月¥${yen(meta.total)}`,
+      meta.yearly ? `見直しで浮く見込み：年¥${yen(meta.yearly)}` : '',
+      '',
+      'この順番で見直すのがおすすめです。',
+      ...plan.flatMap((p, k) => [
+        `${num[k] || '・'} ${p.label}：${p.text}${p.note ? `（${p.note}）` : ''}`,
+        p.url ? `→ ${p.url}` : '',
+      ]),
+      '',
+      '※料金・特典は目安です。最新の情報はURLよりご確認ください。（PRを含みます）',
+    ].filter((l, i, a) => l !== '' || (a[i - 1] !== '' && i > 0)).join('\n');
+    if (window.subhackSendLine) window.subhackSendLine(text);
+  });
   const inc = root.querySelector('#fsInc'), fam = root.querySelector('#fsFam'), out = root.querySelector('#fsOut');
   if (!inc) return;
   // 登録済みのふるさと納税（月割り）を年額に戻す
