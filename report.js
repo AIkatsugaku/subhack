@@ -195,7 +195,7 @@ function buildReport({ items, SVC, icoHTML, iconOf, yen, esc }) {
           <button class="rp-arrow" data-step="1" type="button" aria-label="次へ">›</button>
         </div>
       </div>
-      <p class="pr-note">※料金・特典は目安です。最新の条件は各社の公式サイトでご確認ください。</p>
+      <p class="pr-note">※このレポートは広告（アフィリエイト）を含みます。料金・特典は目安です。最新の情報はURLよりご確認ください。</p>
     </div>`;
 }
 
