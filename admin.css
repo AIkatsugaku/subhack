@@ -126,3 +126,4 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
 .img-box.icon { border-radius: 50%; }
 .img-box img { width: 100%; height: 100%; object-fit: contain; }
 .img-field label.btn { cursor: pointer; }
+.field textarea.tall { min-height: 260px; font-size: 13px; line-height: 1.7; }

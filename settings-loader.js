@@ -12,6 +12,7 @@ function applySettings(st) {
     Object.entries(st.AFFILIATE).forEach(([k, v]) => { if (v) AFFILIATE[k] = v; });
   }
   if (Array.isArray(st.RECOMMENDS)) RECOMMENDS.splice(0, RECOMMENDS.length, ...st.RECOMMENDS);
+  if (Array.isArray(st.GUIDES)) GUIDES.splice(0, GUIDES.length, ...st.GUIDES);
   if (st.REPORT) ['mobile', 'net', 'electric', 'cards', 'furusato'].forEach(k => { if (Array.isArray(st.REPORT[k])) REPORT[k] = st.REPORT[k]; });
 }
 

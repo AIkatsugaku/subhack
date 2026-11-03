@@ -83,7 +83,7 @@
   const b64decode = b64 => decodeURIComponent(escape(atob(b64.replace(/\n/g, ''))));
 
   function defaults() {
-    return clone({ updatedAt: '', SITE, LINE, MEMBERSHIP, AFFILIATE, RECOMMENDS, REPORT });
+    return clone({ updatedAt: '', SITE, LINE, MEMBERSHIP, AFFILIATE, RECOMMENDS, REPORT, GUIDES });
   }
 
   async function loadSettings() {
@@ -93,6 +93,7 @@
       state = { ...defaults(), ...JSON.parse(b64decode(f.content)) };
       // 後から増えたレポートの枠（ふるさと納税など）は初期値で補う
       Object.entries(clone(REPORT)).forEach(([k, v]) => { if (!Array.isArray(state.REPORT[k])) state.REPORT[k] = v; });
+      if (!Array.isArray(state.GUIDES)) state.GUIDES = clone(GUIDES);
     } catch (e) {
       if (e.status !== 404) throw e;
       sha = null; state = defaults();
@@ -168,7 +169,7 @@
   // ---------- 画面 ----------
   const TABS = {
     dash: '📊 ダッシュボード', line: '💬 LINE公式アカウント', member: '⭐ 有料会員', aff: '🔗 アフィリエイト（サービス別）',
-    report: '📝 見直しレポート', recs: '📣 おすすめ枠', site: '⚙️ 基本設定',
+    report: '📝 見直しレポート', recs: '📣 おすすめ枠', guides: '📰 お悩みガイド', site: '⚙️ 基本設定',
   };
   const tabLabel = t => TABS[t].replace(/^\S+\s/, '');
 
@@ -217,12 +218,14 @@
       const affCount = Object.values(state.AFFILIATE || {}).filter(Boolean).length;
       const reportUrls = ['mobile', 'net', 'electric', 'cards', 'furusato'].reduce((n, k) => n + (state.REPORT[k] || []).filter(o => o.url).length, 0);
       const recUrls = (state.RECOMMENDS || []).filter(r => r.url && r.enabled !== false).length;
+      const guideUrls = (state.GUIDES || []).reduce((n, g) => n + (g.links || []).filter(l => l.url && !/houterasu\.or\.jp/.test(l.url)).length, 0);
       const lineOk = !!(state.LINE.id && state.LINE.addFriendUrl);
       const todos = [
         !lineOk && ['LINE公式アカウントのIDと友だち追加URLを設定する', 'line'],
         !state.MEMBERSHIP.joinUrl && ['有料会員の決済リンクを設定する（未設定ならLINEで申し込み）', 'member'],
         !affCount && ['サービスごとのアフィリエイトリンクを登録する', 'aff'],
         !reportUrls && ['見直しレポートの乗り換え先にリンクを入れる', 'report'],
+        !guideUrls && ['お悩みガイド（副業・転職・保険など）に申込リンクを入れる', 'guides'],
       ].filter(Boolean);
       return `<div class="panel">
         <h2>ダッシュボード</h2>
@@ -233,6 +236,7 @@
           <div class="stat"><small>サービス別アフィリエイト</small><b>${affCount}<small style="display:inline">件</small></b></div>
           <div class="stat"><small>レポートの申込リンク</small><b>${reportUrls}<small style="display:inline">件</small></b></div>
           <div class="stat"><small>表示中のおすすめ枠</small><b>${recUrls}<small style="display:inline">件</small></b></div>
+          <div class="stat"><small>お悩みガイドの申込リンク</small><b>${guideUrls}<small style="display:inline">件</small></b></div>
           <div class="stat"><small>最終更新</small><b style="font-size:14px">${state.updatedAt ? new Date(state.updatedAt).toLocaleString('ja-JP') : '—'}</b></div>
         </div>
         ${todos.length ? `<h3>やることリスト</h3><ul class="todo">${todos.map(([t, go]) => `<li>⚠️ ${esc(t)}<button class="btn sm ghost" data-go="${go}" type="button">設定する</button></li>`).join('')}</ul>` : '<h3>✅ すべて設定済みです</h3>'}
@@ -332,6 +336,41 @@
         <h3>🎁 ふるさと納税（ポータルサイト）</h3>
         ${table('furusato', [{ h: 'サイト名', k: 'name' }, { h: '公式ドメイン', k: 'd' }, { h: '色', k: 'c', cls: 'num' }, { h: '文字', k: 't', cls: 'num' }, { h: '特徴', k: 'point' }, { h: '申込URL', k: 'url', cls: 'wide' }],
           { name: '', d: '', c: '#E11D48', t: '', point: '', url: '' })}
+      </div>`;
+    },
+
+    guides() {
+      const rules = k => Object.entries(GUIDE_RULES).map(([id, r]) => `<option value="${id}"${id === k ? ' selected' : ''}>${esc(r.label)}</option>`).join('');
+      return `<div class="panel">
+        <h2>お悩み別ガイド</h2>
+        <p class="muted">固定費レポートに出るブログ風の記事です。記事の最後に申込ボタン（アフィリエイトリンク）が並びます。URLが空のボタンは表示されません。条件に合う人には「あなたにおすすめ」として上に出ます。</p>
+        <p class="muted">本文の書き方：空行で段落を分ける／「## 」で始まる行は見出し／「- 」で始まる行は箇条書き</p>
+        ${(state.GUIDES || []).map((g, i) => `<div class="rec">
+          <div class="rec-head"><b>${esc(g.emoji || '📄')} ${esc(g.title || '記事' + (i + 1))}</b>
+            <label class="switch"><input type="checkbox" data-path="GUIDES.${i}.enabled" data-type="bool"${g.enabled !== false ? ' checked' : ''}> 表示する</label>
+            <button class="del" data-delguide="${i}" type="button" aria-label="削除">×</button></div>
+          <div class="grid2">
+            ${inputHTML(`GUIDES.${i}.title`, { label: 'タイトル' })}
+            <label class="field"><span>「あなたにおすすめ」にする条件</span><select data-path="GUIDES.${i}.when">${rules(g.when)}</select></label>
+          </div>
+          <div class="grid2">
+            ${inputHTML(`GUIDES.${i}.emoji`, { label: '絵文字' })}
+            <label class="field"><span>LINE相談（月額¥${Number(state.MEMBERSHIP.price || 0).toLocaleString()}）のボタン</span>
+              <label class="switch" style="height:40px"><input type="checkbox" data-path="GUIDES.${i}.line" data-type="bool"${g.line !== false ? ' checked' : ''}> 記事の最後に出す</label></label>
+          </div>
+          ${inputHTML(`GUIDES.${i}.lead`, { label: 'リード文（カードと記事の冒頭に出る）' })}
+          ${inputHTML(`GUIDES.${i}.body`, { label: '本文', area: true, cls: 'tall' })}
+          <h3>申込ボタン</h3>
+          <div class="tbl-wrap"><table class="tbl"><thead><tr><th>ボタンの文字</th><th>説明</th><th>リンク先URL</th><th></th></tr></thead><tbody>
+            ${(g.links || []).map((_, j) => `<tr>
+              <td>${inputHTML(`GUIDES.${i}.links.${j}.name`)}</td>
+              <td>${inputHTML(`GUIDES.${i}.links.${j}.desc`)}</td>
+              <td>${inputHTML(`GUIDES.${i}.links.${j}.url`, { cls: 'wide', ph: 'https://px.a8.net/…' })}</td>
+              <td><button class="del" data-dellink="${i}.${j}" type="button" aria-label="削除">×</button></td></tr>`).join('')}
+          </tbody></table></div>
+          <button class="btn sm ghost" data-addlink="${i}" type="button">＋ ボタンを追加</button>
+        </div>`).join('')}
+        <button class="btn sm ghost" id="addGuide" type="button" style="margin-top:12px">＋ 記事を追加</button>
       </div>`;
     },
 
@@ -436,6 +475,23 @@
     });
 
     // おすすめ枠の追加・削除
+    // お悩みガイドの追加・削除
+    $('#addGuide')?.addEventListener('click', () => {
+      state.GUIDES.push({ id: 'g' + Date.now().toString(36), emoji: '📄', enabled: true, when: 'always', title: '新しい記事', lead: '', body: '', links: [{ name: '', desc: '', url: '' }], line: true });
+      markDirty(); render();
+    });
+    $$('[data-delguide]', main).forEach(b => b.onclick = () => {
+      if (!confirm('この記事を削除しますか？')) return;
+      state.GUIDES.splice(+b.dataset.delguide, 1); markDirty(); render();
+    });
+    $$('[data-addlink]', main).forEach(b => b.onclick = () => {
+      (state.GUIDES[+b.dataset.addlink].links ||= []).push({ name: '', desc: '', url: '' }); markDirty(); render();
+    });
+    $$('[data-dellink]', main).forEach(b => b.onclick = () => {
+      const [i, j] = b.dataset.dellink.split('.').map(Number);
+      state.GUIDES[i].links.splice(j, 1); markDirty(); render();
+    });
+
     $('#addRec')?.addEventListener('click', () => {
       state.RECOMMENDS.push({ id: 'always', tag: '', title: '', text: '', cta: '詳しく見る', url: '', enabled: true }); markDirty(); render();
     });

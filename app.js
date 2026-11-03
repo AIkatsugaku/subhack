@@ -397,6 +397,7 @@
       </div>
 
       ${buildReport({ items, SVC, icoHTML, iconOf, yen, esc })}
+      ${buildGuides({ st, esc })}
       ${buildMember({ items, SVC, yen, esc, icoHTML, iconOf })}
 
       ${recs.length ? `<div class="panel">
@@ -420,6 +421,7 @@
     $$('[data-goto]', $('#resultBody')).forEach(b => b.onclick = () => { closeResult(); jump(b.dataset.goto); });
     bindMember($('#resultBody'), { getItems: () => items, save, yen, SVC, toast });
     bindReport($('#resultBody'), { items, yen });
+    bindGuides($('#resultBody'), { openSheet, esc, yen });
   }
 
   // 登録中サービスのうちアフィリエイトURLがあるもの
