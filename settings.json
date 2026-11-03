@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-03T06:16:40.776Z",
+  "updatedAt": "2026-11-03T06:19:08.915Z",
   "SITE": {
     "name": "サブハック",
     "url": "https://aikatsugaku.github.io/subhack/",
@@ -427,7 +427,7 @@
         "fee": 0,
         "rate": 0.01,
         "point": "PayPayポイント",
-        "url": "",
+        "url": "https://www.paypay-card.co.jp/campaign/sign-up/web/outside?utm_source=incentive2&utm_medium=af&utm_campaign=incentive2&t=13186_2qte37tnwxgxCLh",
         "set": [
           "softbank",
           "ymobile",
