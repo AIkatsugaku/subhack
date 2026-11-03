@@ -80,3 +80,6 @@ const FURUSATO_LIMITS = [
   [800, [129000, 120000, 120000, 107000]],
   [1000, [176000, 166000, 166000, 154000]],
 ];
+
+// 見直しレポートで出す項目（管理画面で切り替え。false で非表示）
+const REPORT_SHOW = { mobile: true, net: true, electric: true, cards: true, furusato: true };

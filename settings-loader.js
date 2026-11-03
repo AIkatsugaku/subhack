@@ -13,6 +13,7 @@ function applySettings(st) {
   }
   if (Array.isArray(st.RECOMMENDS)) RECOMMENDS.splice(0, RECOMMENDS.length, ...st.RECOMMENDS);
   if (Array.isArray(st.GUIDES)) GUIDES.splice(0, GUIDES.length, ...st.GUIDES);
+  if (st.REPORT_SHOW) Object.assign(REPORT_SHOW, st.REPORT_SHOW);
   if (st.REPORT) ['mobile', 'net', 'electric', 'cards', 'furusato'].forEach(k => { if (Array.isArray(st.REPORT[k])) REPORT[k] = st.REPORT[k]; });
 }
 

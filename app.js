@@ -143,8 +143,8 @@
     const url = AFFILIATE[sid];
     if (!url) return '';
     return `<div class="aff-box">
-      <p>料金・キャンペーンの最新情報は公式サイトで確認できます。</p>
-      <a class="btn pr" href="${esc(url)}" target="_blank" rel="sponsored noopener">公式サイトを見る<small>PR</small></a>
+      <p>料金・キャンペーンの最新情報は公式サイトで確認できます。<span class="pr-mini">※PRを含みます</span></p>
+      <a class="btn pr" href="${esc(url)}" target="_blank" rel="sponsored noopener">公式サイトを見る</a>
     </div>`;
   }
 
@@ -401,10 +401,9 @@
       ${buildMember({ items, SVC, yen, esc, icoHTML, iconOf })}
 
       ${recs.length ? `<div class="panel">
-        <h3>見直しで安くなるかも</h3>
-        ${recs.map(r => `<div class="rec"><span class="tag">${esc(r.tag)}・PR</span><h4>${esc(r.title)}</h4><p>${esc(r.text)}</p>
+        <h3>見直しで安くなるかも<span class="pr-mini">※PRを含みます</span></h3>
+        ${recs.map(r => `<div class="rec"><span class="tag">${esc(r.tag)}</span><h4>${esc(r.title)}</h4><p>${esc(r.text)}</p>
           <a class="btn pr" href="${esc(r.url)}" target="_blank" rel="sponsored noopener">${esc(r.cta)}</a></div>`).join('')}
-        <p class="pr-note">※このエリアは広告（アフィリエイト）を含みます。</p>
       </div>` : ''}
       ${affListPanel()}
     `;
@@ -429,9 +428,9 @@
     const seen = new Set();
     const list = items.filter(i => AFFILIATE[i.sid] && !seen.has(i.sid) && seen.add(i.sid));
     if (!list.length) return '';
-    return `<div class="panel"><h3>あなたのサブスクの公式キャンペーン</h3>
+    return `<div class="panel"><h3>あなたのサブスクの公式キャンペーン<span class="pr-mini">※PRを含みます</span></h3>
       ${list.map(i => `<div class="li">${icoHTML(iconOf(i))}<div class="lt"><b>${esc(flat(SVC[i.sid].n))}</b><small>最新の料金・特典をチェック</small></div>
-        <a class="btn pr" style="width:auto;height:34px;padding:0 12px;margin:0;font-size:12px" href="${esc(AFFILIATE[i.sid])}" target="_blank" rel="sponsored noopener">見る<small>PR</small></a></div>`).join('')}
+        <a class="btn pr" style="width:auto;height:34px;padding:0 12px;margin:0;font-size:12px" href="${esc(AFFILIATE[i.sid])}" target="_blank" rel="sponsored noopener">見る</a></div>`).join('')}
     </div>`;
   }
 

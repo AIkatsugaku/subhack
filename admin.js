@@ -83,7 +83,7 @@
   const b64decode = b64 => decodeURIComponent(escape(atob(b64.replace(/\n/g, ''))));
 
   function defaults() {
-    return clone({ updatedAt: '', SITE, LINE, MEMBERSHIP, AFFILIATE, RECOMMENDS, REPORT, GUIDES });
+    return clone({ updatedAt: '', SITE, LINE, MEMBERSHIP, AFFILIATE, RECOMMENDS, REPORT, REPORT_SHOW, GUIDES });
   }
 
   async function loadSettings() {
@@ -94,6 +94,7 @@
       // 後から増えたレポートの枠（ふるさと納税など）は初期値で補う
       Object.entries(clone(REPORT)).forEach(([k, v]) => { if (!Array.isArray(state.REPORT[k])) state.REPORT[k] = v; });
       if (!Array.isArray(state.GUIDES)) state.GUIDES = clone(GUIDES);
+      state.REPORT_SHOW = { ...clone(REPORT_SHOW), ...(state.REPORT_SHOW || {}) };
     } catch (e) {
       if (e.status !== 404) throw e;
       sha = null; state = defaults();
@@ -312,15 +313,21 @@
       const sel = (path, cat) => `<select data-path="${path}">${svcOpts(cat).map(s => `<option value="${s.id}"${getPath(path) === s.id ? ' selected' : ''}>${esc(flat(s.n))}</option>`).join('')}</select>`;
       const table = (key, cols, blank) => {
         const list = state.REPORT[key] || [];
-        return `<div class="tbl-wrap"><table class="tbl"><thead><tr>${cols.map(c => `<th>${c.h}</th>`).join('')}<th></th></tr></thead><tbody>
-          ${list.map((_, i) => `<tr>${cols.map(c => `<td>${c.sel ? sel(`REPORT.${key}.${i}.${c.k}`, c.sel) : inputHTML(`REPORT.${key}.${i}.${c.k}`, { type: c.t || '', cls: c.cls || '' })}</td>`).join('')}
+        const range = key !== 'furusato';
+        return `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>表示</th>${cols.map(c => `<th>${c.h}</th>`).join('')}${range ? '<th>表示する金額帯（今の月額）</th>' : ''}<th></th></tr></thead><tbody>
+          ${list.map((o, i) => `<tr class="${o.show === false ? 'off' : ''}"><td><input type="checkbox" class="show-chk" data-path="REPORT.${key}.${i}.show" data-type="bool"${o.show !== false ? ' checked' : ''} aria-label="表示"></td>${cols.map(c => `<td>${c.sel ? sel(`REPORT.${key}.${i}.${c.k}`, c.sel) : inputHTML(`REPORT.${key}.${i}.${c.k}`, { type: c.t || '', cls: c.cls || '' })}</td>`).join('')}
+            ${range ? `<td><div class="range">¥${inputHTML(`REPORT.${key}.${i}.min`, { cls: 'num', ph: '下限なし' })}〜¥${inputHTML(`REPORT.${key}.${i}.max`, { cls: 'num', ph: '上限なし' })}</div></td>` : ''}
             <td><button class="del" data-del="${key}.${i}" type="button" aria-label="削除">×</button></td></tr>`).join('')}
         </tbody></table></div>
         <button class="btn sm ghost" data-add="${key}" data-blank='${esc(JSON.stringify(blank))}' type="button">＋ 行を追加</button>`;
       };
       return `<div class="panel">
         <h2>見直しレポート</h2>
-        <p class="muted">結果画面の「あなたの見直しレポート」に出す乗り換え先です。URLを入れると「申し込む（PR）」ボタンが出ます。「セット」には相性のよいサービスID（カンマ区切り）を入れると優先表示されます。</p>
+        <p class="muted">結果画面の「あなたの見直しレポート」に出す乗り換え先です。URLを入れると申込ボタンが出て、リンクのある候補が優先して表示されます。「セット」には相性のよいサービスID（カンマ区切り）を入れると優先表示されます。</p>
+        <h3>レポートに出す項目</h3>
+        <div class="show-sections">${[['mobile', '📱 スマホ'], ['net', '🌐 光回線'], ['electric', '⚡ 電気代'], ['cards', '💳 クレジットカード'], ['furusato', '🎁 ふるさと納税']].map(([k, l]) =>
+          `<label class="switch"><input type="checkbox" data-path="REPORT_SHOW.${k}" data-type="bool"${state.REPORT_SHOW?.[k] !== false ? ' checked' : ''}> ${l}</label>`).join('')}</div>
+        <p class="muted">「表示」のチェックを外した候補はレポートに出ません。「表示する金額帯」を入れると、その項目の今の月額（クレジットカードはカードで払える毎月の支払い）がその範囲の人にだけ出ます。空欄なら制限なしです。</p>
         <h3>📱 スマホ</h3>
         ${table('mobile', [{ h: 'サービス', k: 'sid', sel: 'mobile' }, { h: 'プラン', k: 'plan' }, { h: '月額', k: 'price', t: 'num', cls: 'num' }, { h: 'データ量', k: 'gb', cls: 'num' }, { h: 'セット', k: 'set', t: 'csv' }, { h: '申込URL', k: 'url', cls: 'wide' }],
           { sid: 'linemo', plan: '', price: 0, gb: '', url: '' })}

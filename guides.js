@@ -165,10 +165,9 @@ function bindGuides(root, { openSheet, esc, yen }) {
         <h3><span>${esc(g.emoji || '📄')}</span>${esc(g.title)}</h3>
         <p class="guide-intro">${esc(g.lead || '')}</p>
         <div class="guide-body">${guideBodyHTML(g.body, esc)}</div>
-        ${links.length ? `<div class="guide-links"><p class="guide-links-h">ここから申し込めます</p>
+        ${links.length ? `<div class="guide-links"><p class="guide-links-h">ここから申し込めます${links.some(isAff) ? '<span class="pr-mini">※PRを含みます</span>' : ''}</p>
           ${links.map(l => `<a class="guide-link" href="${esc(l.url)}" target="_blank" rel="${isAff(l) ? 'sponsored ' : ''}noopener">
-            <span><b>${esc(l.name)}</b><small>${esc(l.desc || '')}</small></span><em>${isAff(l) ? 'PR' : '公式'}</em></a>`).join('')}
-          ${links.some(isAff) ? '<p class="pr-note">※このページは広告（アフィリエイト）を含みます。</p>' : ''}</div>` : ''}
+            <span><b>${esc(l.name)}</b><small>${esc(l.desc || '')}</small></span>${isAff(l) ? '' : '<em>公式</em>'}</a>`).join('')}</div>` : ''}
         ${g.line !== false ? `<div class="guide-line">
           <p><b>ひとりで決めるのが不安なら</b>　LINEでいつでも何度でも相談できます（${esc(MEMBERSHIP.name)}・月額¥${yen(MEMBERSHIP.price)}）</p>
           <button class="btn line" type="button" data-guide-line>LINEで相談する（月額¥${yen(MEMBERSHIP.price)}）</button>

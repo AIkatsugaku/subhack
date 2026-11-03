@@ -11,9 +11,14 @@ function buildReport({ items, SVC, icoHTML, iconOf, yen, esc }) {
     ? icoHTML(iconOf({ sid: o.sid }))
     : icoHTML({ c: o.c || '#64748B', t: o.t || o.name.slice(0, 1), img: o.d ? iconUrl(o.d) : '' });
   const btn = (url, label = 'ここから申し込む') => url
-    ? `<a class="btn pr rp-btn" href="${esc(url)}" target="_blank" rel="sponsored noopener">${esc(label)}<small>PR</small></a>` : '';
+    ? `<a class="btn pr rp-btn" href="${esc(url)}" target="_blank" rel="sponsored noopener">${esc(label)}</a>` : '';
   const goto = (cat, label) => `<button class="btn ghost rp-goto" data-goto="${cat}" type="button">${esc(label)}</button>`;
   const svcName = sid => (SVC[sid]?.n || '').replace(/\n/g, '');
+  // 管理画面で「表示」を外した候補と、金額帯（利用者の今の月額）に合わない候補は出さない
+  const yenNum = v => Number(String(v ?? '').replace(/[^0-9]/g, '')) || 0;  // 「3,000」「3000円」も数字として読む
+  const pool = (key, cur) => (REPORT[key] || []).filter(o => o.show !== false && (!yenNum(o.min) || cur >= yenNum(o.min)) && (!yenNum(o.max) || cur <= yenNum(o.max)));
+  // 管理画面で項目ごと非表示にできる
+  const on = key => typeof REPORT_SHOW === 'undefined' || REPORT_SHOW[key] !== false;
   // 申込リンク（アフィリエイト）が入っている候補を優先して出す
   const linked = o => (o.url ? 1 : 0);
   // まだ金額を入れていない人にも、リンクのある候補だけは見せる
@@ -31,11 +36,11 @@ function buildReport({ items, SVC, icoHTML, iconOf, yen, esc }) {
   let points = 0;   // 年間のポイント見込み（円相当）
 
   // ---------- スマホ ----------
-  {
+  if (on('mobile')) {
     const lines = paid('mobile');
     let body;
     if (!lines.length) {
-      body = `<p class="rp-text">スマホ代を入れると、今より安いプランを探せます。</p>${goto('mobile', 'スマホ代を入れて比較する')}${linkedList(REPORT.mobile, '人気の乗り換え先')}`;
+      body = `<p class="rp-text">スマホ代を入れると、今より安いプランを探せます。</p>${goto('mobile', 'スマホ代を入れて比較する')}${linkedList(pool('mobile', 0), '人気の乗り換え先')}`;
     } else {
       const cur = sumOf(lines), per = Math.round(cur / lines.length);
       const mine = new Set(lines.map(l => l.sid));
@@ -43,13 +48,13 @@ function buildReport({ items, SVC, icoHTML, iconOf, yen, esc }) {
       const gbNum = gb => /無制限/.test(gb) ? 999 : Number((gb.match(/\d+/) || [0])[0]);
       const tierOf = o => gbNum(o.gb) <= 5 ? 0 : gbNum(o.gb) <= 30 ? 1 : 2;
       const TIER = ['データ少なめの人向け', 'データふつうの人向け', 'データたっぷりの人向け'];
-      const opts = [0, 1, 2].map(t => REPORT.mobile
+      const opts = [0, 1, 2].map(t => pool('mobile', cur)
         .filter(o => tierOf(o) === t && o.price < per && !mine.has(o.sid))
         .map(o => ({ ...o, tier: TIER[t], save: (per - o.price) * lines.length, match: setMatch(o) }))
         .sort((a, b) => linked(b) - linked(a) || b.match.length - a.match.length || a.price - b.price)[0])
         .filter(Boolean);
       // リンクのある候補が今より安いのに選ばれていなければ追加する（最大4件）
-      REPORT.mobile
+      pool('mobile', cur)
         .filter(o => o.url && o.price < per && !mine.has(o.sid) && !opts.some(x => x.sid === o.sid && x.plan === o.plan))
         .forEach(o => { if (opts.length < 4) opts.push({ ...o, tier: TIER[tierOf(o)], save: (per - o.price) * lines.length, match: setMatch(o) }); });
       if (opts.length) yearly += Math.max(...opts.map(o => o.save)) * 12;
@@ -68,16 +73,16 @@ function buildReport({ items, SVC, icoHTML, iconOf, yen, esc }) {
   }
 
   // ---------- 光回線 ----------
-  {
+  if (on('net')) {
     const lines = paid('net');
     let body;
     const carriers = items.filter(i => i.cat === 'mobile').map(i => i.sid);
     if (!lines.length) {
-      body = `<p class="rp-text">ネット回線を入れると、今お得な回線と比べられます。</p>${goto('net', 'ネット回線を入れて比較する')}${linkedList(REPORT.net, '人気の光回線')}`;
+      body = `<p class="rp-text">ネット回線を入れると、今お得な回線と比べられます。</p>${goto('net', 'ネット回線を入れて比較する')}${linkedList(pool('net', 0), '人気の光回線')}`;
     } else {
       const cur = sumOf(lines);
       const mine = new Set(lines.map(l => l.sid));
-      const opts = REPORT.net
+      const opts = pool('net', cur)
         .filter(o => !mine.has(o.sid))
         .map(o => {
           const real = Math.round(o.price - (o.cashback || 0) / (o.months || 24));
@@ -103,14 +108,14 @@ function buildReport({ items, SVC, icoHTML, iconOf, yen, esc }) {
   }
 
   // ---------- 電気 ----------
-  {
+  if (on('electric')) {
     const cur = sumOf(items.filter(i => i.sid === 'electric'));
     const carriers = items.map(i => i.sid);
     let body;
     if (!cur) {
-      body = `<p class="rp-text">電気代を入れると、安くなる電力会社を探せます。</p>${goto('fixed', '電気代を入れて比較する')}${linkedList(REPORT.electric, '人気の電力会社')}`;
+      body = `<p class="rp-text">電気代を入れると、安くなる電力会社を探せます。</p>${goto('fixed', '電気代を入れて比較する')}${linkedList(pool('electric', 0), '人気の電力会社')}`;
     } else {
-      const opts = REPORT.electric
+      const opts = pool('electric', cur)
         .map(o => ({ ...o, save: Math.round(cur * (o.rate || 0)), match: (o.set || []).filter(s => carriers.includes(s)) }))
         .sort((a, b) => linked(b) - linked(a) || b.match.length - a.match.length || b.save - a.save)
         .slice(0, 3);
@@ -129,12 +134,12 @@ function buildReport({ items, SVC, icoHTML, iconOf, yen, esc }) {
   }
 
   // ---------- クレジットカード ----------
-  {
+  if (on('cards')) {
     // カードで払えない・払わないことが多い固定費は除く
     const NOT_CARD = new Set(['rent', 'allowance', 'daycare', 'kanri', 'invest', 'ideco', 'tsumitate']);
     const monthly = sumOf(items.filter(i => !NOT_CARD.has(i.sid) && i.cat !== 'loan'));
     const fee = sumOf(items.filter(i => i.sid === 'annualfee'));
-    const cards = REPORT.cards
+    const cards = pool('cards', monthly)
       .map(c => ({ ...c, match: (c.set || []).filter(has), pt: Math.round(monthly * 12 * c.rate) }))
       .sort((a, b) => linked(b) - linked(a) || b.match.length - a.match.length || b.rate - a.rate || a.fee - b.fee)
       .slice(0, 2);
@@ -154,7 +159,7 @@ function buildReport({ items, SVC, icoHTML, iconOf, yen, esc }) {
   }
 
   // ---------- ふるさと納税 ----------
-  {
+  if (on('furusato')) {
     const pref = furusatoPref();
     const incomeOpts = FURUSATO_LIMITS.map(([man]) => `<option value="${man}"${pref.inc === man ? ' selected' : ''}>${man === 1000 ? '1,000' : man}万円${man === 1000 ? '以上' : '前後'}</option>`).join('');
     const famOpts = FURUSATO_FAMILY.map((f, k) => `<option value="${k}"${pref.fam === k ? ' selected' : ''}>${esc(f)}</option>`).join('');
@@ -166,17 +171,16 @@ function buildReport({ items, SVC, icoHTML, iconOf, yen, esc }) {
       </div>
       <div class="fs-out" id="fsOut"></div>
       ${food.length ? `<div class="rp-alert">🍚 ${esc(food.map(i => (SVC[i.sid]?.n || i.name || '').replace(/\n/g, '')).join('・'))}（月¥${yen(sumOf(food))}）を払っています。お米や食品を返礼品で受け取れば、その分の出費を減らせます。</div>` : ''}
-      ${(REPORT.furusato || []).map(o => `<div class="rp-opt">${icoFor(o)}
+      ${pool('furusato', 0).map(o => `<div class="rp-opt">${icoFor(o)}
           <div class="rp-main"><b>${esc(o.name)}</b><small>${esc(o.point || '')}</small></div>
         </div>${btn(o.url, `${o.name}で返礼品を探す`)}`).join('')}
       <p class="rp-note">※上限は総務省の目安表（給与収入のみの場合）にもとづく目安です。住宅ローン控除・医療費控除などがあると変わります。正確な額は各ポータルのシミュレーターで確認してください。</p>`;
     sections.push({ key: 'furusato', title: 'ふるさと納税', emoji: '🎁', body });
   }
 
-  const hasAff = [REPORT.mobile, REPORT.net, REPORT.electric, REPORT.cards, REPORT.furusato || []].some(l => l.some(o => o.url));
   return `
     <div class="panel rp">
-      <h3>あなたの見直しレポート</h3>
+      <h3>あなたの見直しレポート<span class="pr-mini">※PRを含みます</span></h3>
       <div class="rp-sum">
         <div><small>見直しで浮くかも</small><b>年 ¥${yen(yearly)}</b></div>
         <div><small>カード払いでポイント</small><b>年 ¥${yen(points)}分</b></div>
@@ -191,8 +195,7 @@ function buildReport({ items, SVC, icoHTML, iconOf, yen, esc }) {
           <button class="rp-arrow" data-step="1" type="button" aria-label="次へ">›</button>
         </div>
       </div>
-      ${hasAff ? '<p class="pr-note">※このレポートは広告（アフィリエイト）を含みます。料金・特典は目安です。最新の条件は各社の公式サイトでご確認ください。</p>'
-        : '<p class="pr-note">※料金・特典は目安です。最新の条件は各社の公式サイトでご確認ください。</p>'}
+      <p class="pr-note">※料金・特典は目安です。最新の条件は各社の公式サイトでご確認ください。</p>
     </div>`;
 }
 
@@ -232,6 +235,7 @@ function bindCarousel(car) {
   const view = car.querySelector('.rp-view');
   const track = car.querySelector('.rp-track');
   const slides = [...car.querySelectorAll('.rp-slide')];
+  if (!slides.length) return;
   const tabs = [...car.querySelectorAll('.rp-tab')];
   const dots = [...car.querySelectorAll('.rp-dots i')];
   const tabBar = car.querySelector('.rp-tabs');

@@ -480,3 +480,6 @@ details p, details .ptable { padding: 0 14px 12px; margin: 0; font-size: 13px; }
 .rp-dots { display: flex; gap: 6px; }
 .rp-dots i { width: 7px; height: 7px; border-radius: 99px; background: #D5CEC0; transition: .2s; }
 .rp-dots i.on { width: 20px; background: var(--accent); }
+
+/* PRの注記（見出しの横に小さく） */
+.pr-mini { margin-left: 8px; font-family: "Noto Sans JP", sans-serif; font-size: 10px; font-weight: 400; color: var(--sub); vertical-align: middle; letter-spacing: 0; }
