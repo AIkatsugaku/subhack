@@ -39,7 +39,7 @@ function hackTryUnlock(input) {
   return true;
 }
 const hackPageUrl = () => new URL('hacks.html', SITE.url || location.href).href;
-const hackShareText = () => `知らないと損する、合法の裏技${HACKS.length}選。サブスク・電気代・病院代から、児童手当・年金・補助金まで`;
+const hackShareText = () => `ライフハック${HACKS.length}選。サブスク・電気代・病院代から、児童手当・年金・補助金まで`;
 const hackCanRead = h => h.free || hackUnlocked();
 const hackNo = h => HACKS.indexOf(h) + 1;
 const hackCat = id => HACK_CATS.find(c => c.id === id) || { name: '', emoji: '' };
@@ -124,11 +124,11 @@ function bindHackLock(root, { toast, onOpen }) {
     if (!(await hackShare(b.dataset.hkShare, toast))) return;
     hackSave('share');
     // シェア画面から戻ってきたときに開いているよう、少し待ってから描き直す
-    setTimeout(() => { toast('シェアありがとうございます！ すべての裏技が読めます'); onOpen(); }, 600);
+    setTimeout(() => { toast('シェアありがとうございます！ すべてのライフハックが読めます'); onOpen(); }, 600);
   });
   root.querySelectorAll('[data-hk-code]').forEach(f => f.onsubmit = ev => {
     ev.preventDefault();
-    if (hackTryUnlock(f.code.value)) { toast('すべての裏技が読めるようになりました'); onOpen(); }
+    if (hackTryUnlock(f.code.value)) { toast('すべてのライフハックが読めるようになりました'); onOpen(); }
     else { toast('合言葉が違います'); f.code.select(); }
   });
 }
@@ -156,10 +156,10 @@ function buildHackPanel({ items }) {
       <span class="hk-row-go">${hackCanRead(h) ? '読む ›' : '🔒'}</span>
     </button>`;
   return `<div class="panel hk-panel">
-      <h3>知らないと損する、合法の裏技</h3>
+      <h3>あなたに使えるライフハック</h3>
       <p class="guides-lead">公式の制度やルールを“設計どおり”に使うだけ。あなたの固定費に関係するものから並べています。</p>
       <div class="hk-rows">${mine.map(h => row(h, true)).join('')}${tops.map(h => row(h, false)).join('')}</div>
-      <a class="btn ghost" href="hacks.html">裏技${HACKS.length}件をぜんぶ見る${hackUnlocked() ? '' : '（シェアで全文公開）'}</a>
+      <a class="btn ghost" href="hacks.html">ライフハック${HACKS.length}選をぜんぶ見る${hackUnlocked() ? '' : '（シェアで全文公開）'}</a>
     </div>`;
 }
 
@@ -167,7 +167,7 @@ function bindHackPanel(root, { openSheet, toast }) {
   const open = h => {
     const can = hackCanRead(h);
     openSheet(`<article class="guide-article hk-article">
-        <p class="guide-cat">${hackCat(h.cat).emoji} ${hackEsc(hackCat(h.cat).name)}の裏技 #${hackNo(h)}</p>
+        <p class="guide-cat">${hackCat(h.cat).emoji} ${hackEsc(hackCat(h.cat).name)}のライフハック #${hackNo(h)}</p>
         <h3>${hackEsc(h.t)}</h3>
         <div class="hk-badges">${hackBadges(h)}</div>
         <p class="hk-effect">💰 ${hackEsc(h.e)}</p>
@@ -190,7 +190,7 @@ function renderHackTeaser(el) {
   if (!el || typeof HACKS === 'undefined') return;
   const e = hackEsc;
   const top = HACKS.filter(h => h.top).sort((a, b) => a.top - b.top).slice(0, 6);
-  el.innerHTML = `<h2>知らないと損する、合法の裏技 ${HACKS.length}選</h2>
+  el.innerHTML = `<h2>ライフハック${HACKS.length}選</h2>
     <p>サブスクの一時停止、電気代・病院代の節約から、児童手当・育休・年金・補助金まで。公式の制度やルールを“設計どおり”に使うものだけを集めました。</p>
     <ol class="hk-teaser">${top.map(h => `<li><a href="${hackUrl(h)}"><b>${e(h.t)}</b><small>💰 ${e(h.e)}</small></a></li>`).join('')}</ol>
     <a class="btn" href="hacks.html">${HACKS.length}件をぜんぶ見る${hackGateOn() ? `<small>${hackShareOn() ? 'シェアで全文' : 'LINE登録で全文'}</small>` : ''}</a>`;
@@ -224,7 +224,7 @@ function initHacksPage() {
     app.innerHTML = `
       <section class="hk-hero">
         <p class="hero-eyebrow">${!hackGateOn() ? '無料で全文公開' : hackShareOn() ? 'シェアで全文公開' : 'LINE登録で全文公開'}</p>
-        <h1>知らないと損する<br><em>合法の裏技</em> ${HACKS.length}選</h1>
+        <h1><em>ライフハック</em>${HACKS.length}選</h1>
         <p class="hero-lead">詐欺・うその申告・規約の抜け道ではなく、公式の制度やルールを“設計どおり”に使うものだけを集めました。知っているかどうかで差がつく情報の棚卸しです。</p>
         <ul class="hk-stats"><li><b>${HACKS.length}</b>件</li><li><b>${HACK_CATS.length}</b>カテゴリ</li><li><b>${HACKS_UPDATED.replace(/-/g, '/')}</b>調査</li><li>最大<b>110万円</b>級の補助金も</li></ul>
       </section>
@@ -259,7 +259,7 @@ function initHacksPage() {
           <li>「一部未検証」の印がある項目は、ブログ・掲示板・比較記事などだけが根拠の情報を含みます。</li>
           <li>家電の型落ち時期、eSIMの料金比較、マイル購入セールの単価は、時期・在庫・為替で変わります。</li>
           <li>住宅の省エネ補助の正確な金額は、住宅省エネ2026キャンペーン公式サイトの事業ごとのページで確定させてください。</li>
-          <li>X（旧Twitter）やブログで話題の裏技は、出典に「二次情報」と書いています。公式の情報で裏が取れないものは載せていません。</li>
+          <li>X（旧Twitter）やブログで話題のライフハックは、出典に「二次情報」と書いています。公式の情報で裏が取れないものは載せていません。</li>
           <li>運送約款に反するおそれがある方法（ヒドゥンシティ発券など）や、VPNでの地域価格の回避、学割の偽装は載せていません。</li>
         </ul>
       </section>`;
