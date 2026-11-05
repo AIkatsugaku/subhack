@@ -499,3 +499,100 @@ details p, details .ptable { padding: 0 14px 12px; margin: 0; font-size: 13px; }
 .guide-more { margin-top: 12px; background: transparent; }
 .guide-more summary { font-size: 12px; color: var(--sub); padding: 8px 30px 8px 2px; }
 .guide-more[open] summary { margin-bottom: 6px; }
+
+/* ---------- 合法の裏技（hacks.html・固定費レポート・トップの紹介） ---------- */
+.hk-badges { display: flex; flex-wrap: wrap; gap: 4px; }
+.hk-badges:empty { display: none; }
+.hk-badge { font-size: 10px; font-weight: 700; padding: 1px 8px; border-radius: 99px; background: var(--soft); color: var(--sub); }
+.hk-badge.top { background: #FFF4EF; color: var(--pr); }
+.hk-badge.unv { background: #FFF8E1; color: #8A6100; }
+.hk-badge.free { background: #E3F2EF; color: var(--accent); }
+.hk-badge.lock { background: #E9F9EF; color: #06A847; }
+
+.hk-body { font-size: 14px; line-height: 1.8; }
+.hk-body h5 { margin: 14px 0 4px; font-size: 12px; color: var(--accent); letter-spacing: .04em; }
+.hk-body p { margin: 0; }
+.hk-steps { margin: 0; padding-left: 1.4em; }
+.hk-steps li { padding: 2px 0; }
+.hk-note { background: var(--soft); border-radius: 12px; padding: 10px 12px; font-size: 13px; }
+.hk-src { margin-top: 12px !important; font-size: 11px; color: var(--sub); overflow-wrap: anywhere; }
+.hk-src a { color: var(--accent); }
+.hk-effect { margin: 10px 0 0; background: #FFF4EF; color: #9A3412; border-radius: 12px; padding: 10px 12px; font-size: 13px; font-weight: 700; }
+
+.hk-lock { background: #F2FBF5; border: 1.5px dashed #9EDDB4; border-radius: 16px; padding: 14px; margin-top: 12px; }
+.hk-lock-h { margin: 0; font-weight: 700; color: #0B6B33; }
+.hk-lock-tx { margin: 6px 0 0; font-size: 13px; color: var(--sub); }
+.hk-lock-btns .btn { height: 44px; }
+.hk-share { display: grid; grid-template-columns: 1fr 1fr; gap: 0 8px; }
+.hk-share .btn { margin-top: 10px; }
+.hk-share .btn.ghost { grid-column: 1 / -1; }
+.btn.hk-sh-line { background: #06C755; }
+.hk-line-link { display: block; margin: 8px auto 0; font-size: 12px; font-weight: 700; color: #06A847; text-decoration: underline; }
+.hk-code { display: flex; gap: 8px; margin-top: 10px; }
+.hk-code input { flex: 1; min-width: 0; height: 44px; border-radius: 12px; border: 1.5px solid var(--line); padding: 0 12px; font: inherit; background: #fff; }
+.hk-code .btn { width: auto; margin: 0; padding: 0 18px; }
+
+/* 固定費レポートの欄 */
+.hk-rows { display: grid; gap: 8px; }
+.hk-row { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: var(--soft); border-radius: 16px; padding: 12px 14px; }
+.hk-row:hover { background: #E8F5F2; }
+.hk-row.pick { background: #FFF4EF; box-shadow: inset 0 0 0 1.5px #F6C9B6; }
+.hk-row-ico { font-size: 22px; flex: none; }
+.hk-row-tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.hk-row-tx em { font-style: normal; font-size: 10px; font-weight: 700; color: var(--pr); }
+.hk-row-tx b { font-size: 14px; line-height: 1.45; }
+.hk-row-tx small { font-size: 12px; color: var(--sub); line-height: 1.5; }
+.hk-row-go { flex: none; font-size: 12px; font-weight: 700; color: var(--accent); }
+.hk-article h3 { display: block; font-size: 20px; }
+
+/* トップページの紹介 */
+.hk-teaser { margin: 0; padding: 0; list-style: none; counter-reset: hk; display: grid; gap: 8px; }
+@media (min-width: 760px) { .hk-teaser { grid-template-columns: 1fr 1fr; } }
+.hk-teaser li { counter-increment: hk; }
+.hk-teaser a { display: block; height: 100%; text-decoration: none; color: var(--ink); background: var(--soft); border-radius: 14px; padding: 12px 14px 12px 44px; position: relative; }
+.hk-teaser a::before { content: counter(hk); position: absolute; left: 14px; top: 10px; font-family: var(--round); font-weight: 900; font-size: 20px; color: var(--pr); }
+.hk-teaser a:hover { background: #E8F5F2; }
+.hk-teaser b { display: block; font-size: 14px; line-height: 1.5; }
+.hk-teaser small { display: block; margin-top: 2px; font-size: 12px; color: var(--sub); }
+
+/* 一覧ページ */
+.hk-page { padding-bottom: 40px; }
+.hk-hero { padding: 18px 0 8px; }
+.hk-hero h1 { margin: 0; font-family: var(--round); font-weight: 900; font-size: clamp(27px, 5.4vw, 42px); line-height: 1.35; color: var(--navy); }
+.hk-hero h1 em { font-style: normal; background: linear-gradient(transparent 62%, #FFD7C9 62%); }
+.hk-stats { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; padding: 0; margin: 14px 0 0; }
+.hk-stats li { background: var(--card); border-radius: 12px; padding: 6px 12px; font-size: 12px; color: var(--sub); }
+.hk-stats b { color: var(--navy); font-size: 15px; margin-right: 2px; }
+.hk-gate { position: relative; }
+.hk-gate .hk-lock { margin-top: 0; }
+.hk-qr { display: none; }
+@media (min-width: 760px) { .hk-qr { display: block; width: 120px; margin: 12px auto 0; } }
+.hk-top ol { margin: 0; padding: 0; list-style: none; counter-reset: tp; display: grid; gap: 6px; }
+@media (min-width: 760px) { .hk-top ol { grid-template-columns: 1fr 1fr; } }
+.hk-top li { counter-increment: tp; }
+.hk-top a { display: block; text-decoration: none; color: var(--ink); padding: 8px 10px 8px 40px; border-radius: 12px; position: relative; }
+.hk-top a:hover { background: var(--soft); }
+.hk-top a::before { content: counter(tp); position: absolute; left: 10px; top: 6px; font-family: var(--round); font-weight: 900; font-size: 18px; color: var(--pr); }
+.hk-top b { display: block; font-size: 14px; line-height: 1.5; }
+.hk-top small { display: block; font-size: 12px; color: var(--sub); }
+
+.hk-chips { position: sticky; top: 56px; z-index: 5; display: flex; gap: 6px; overflow-x: auto; padding: 10px 0; margin-top: 10px; background: var(--bg); scrollbar-width: none; }
+.hk-chips::-webkit-scrollbar { display: none; }
+.hk-chips button { flex: none; font-size: 13px; font-weight: 700; padding: 7px 14px; border-radius: 99px; background: var(--card); color: var(--navy); box-shadow: inset 0 0 0 1px var(--line); }
+.hk-chips button.on { background: var(--navy); color: #fff; box-shadow: none; }
+
+.hk-sec { margin-top: 18px; }
+.hk-sec h2 { margin: 0; font-family: var(--round); font-size: 20px; color: var(--navy); display: flex; align-items: baseline; gap: 8px; }
+.hk-sec h2 small { font-size: 12px; color: var(--sub); font-weight: 500; }
+.hk-sec-lead { margin: 4px 0 10px; font-size: 13px; color: var(--sub); }
+.hk-card { background: var(--card); border-radius: 18px; margin-top: 10px; scroll-margin-top: 120px; }
+.hk-card summary { display: flex; gap: 10px; padding: 14px 40px 14px 16px; font-weight: 400; font-size: 14px; color: var(--ink); }
+.hk-no { flex: none; font-family: var(--round); font-weight: 900; color: var(--pr); font-size: 15px; padding-top: 1px; }
+.hk-head { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.hk-head b { font-size: 15px; line-height: 1.5; color: var(--navy); }
+.hk-head small { font-size: 12px; color: #9A3412; line-height: 1.5; }
+.hk-card > .hk-body, .hk-card > .hk-lock { margin: 0 16px 16px; }
+.hk-card > .hk-body { border-top: 1px solid var(--line); padding-top: 4px; }
+.hk-notes ul { margin: 0; padding-left: 1.2em; font-size: 13px; color: #4B5551; }
+.hk-notes li { padding: 3px 0; }
+.hk-ftr { max-width: var(--w); margin: 30px auto 0; padding: 0 16px; }

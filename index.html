@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=202611031542">
+<link rel="stylesheet" href="style.css?v=202611051900">
 </head>
 <body>
 
@@ -96,6 +96,8 @@
     <div id="priceTables"></div>
   </section>
 
+  <section class="content" id="hacks"></section>
+
   <section class="content" id="faq">
     <h2>よくある質問</h2>
     <details><summary>入力した内容はどこかに送られますか？</summary><p>送られません。選んだ内容はお使いのブラウザの中だけに保存されます。</p></details>
@@ -142,15 +144,18 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=202611031542"></script>
-<script src="data.js?v=202611031542"></script>
-<script src="icons.js?v=202611031542"></script>
-<script src="report-config.js?v=202611031542"></script>
-<script src="report.js?v=202611031542"></script>
-<script src="member.js?v=202611031542"></script>
-<script src="scan.js?v=202611031542"></script>
-<script src="guides.js?v=202611031542"></script>
-<script src="settings-loader.js?v=202611031542"></script>
-<script src="app.js?v=202611031542"></script>
+<script src="config.js?v=202611051900"></script>
+<script src="data.js?v=202611051900"></script>
+<script src="icons.js?v=202611051900"></script>
+<script src="report-config.js?v=202611051900"></script>
+<script src="report.js?v=202611051900"></script>
+<script src="member.js?v=202611051900"></script>
+<script src="scan.js?v=202611051900"></script>
+<script src="guides.js?v=202611051900"></script>
+<script src="hacks-data.js?v=202611051900"></script>
+<script src="hacks.js?v=202611051900"></script>
+<script src="settings-loader.js?v=202611051900"></script>
+<script src="app.js?v=202611051900"></script>
+<script>(window.settingsReady || Promise.resolve()).then(() => renderHackTeaser(document.getElementById('hacks')));</script>
 </body>
 </html>

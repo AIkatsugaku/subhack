@@ -397,6 +397,7 @@
       </div>
 
       ${buildReport({ items, SVC, icoHTML, iconOf, yen, esc })}
+      ${buildHackPanel({ items })}
       ${buildGuides({ st, esc })}
       ${buildMember({ items, SVC, yen, esc, icoHTML, iconOf })}
 
@@ -421,6 +422,7 @@
     bindMember($('#resultBody'), { getItems: () => items, save, yen, SVC, toast });
     bindReport($('#resultBody'), { items, yen });
     bindGuides($('#resultBody'), { openSheet, esc, yen });
+    bindHackPanel($('#resultBody'), { openSheet, toast });
   }
 
   // 登録中サービスのうちアフィリエイトURLがあるもの
