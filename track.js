@@ -26,6 +26,24 @@
   const page = location.pathname.replace(/^\/subhack/, '') || '/';
   send({ p: page, v: first, r: ref });
 
+  // いま見ている人：開いている間だけ45秒ごとに合図を送る（タブごとのでたらめな番号だけ）
+  const hbUrl = url.replace(/\/t$/, '/hb');
+  let vid = '';
+  try { vid = sessionStorage.getItem('subhack.vid') || ''; } catch { }
+  if (!vid) { vid = Math.random().toString(36).slice(2, 12) + Date.now().toString(36); try { sessionStorage.setItem('subhack.vid', vid); } catch { } }
+  vid = vid.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 24);
+  const beat = bye => {
+    const body = JSON.stringify(bye ? { vid, bye: 1 } : { vid, p: page });
+    try { if (navigator.sendBeacon && navigator.sendBeacon(hbUrl, new Blob([body], { type: 'text/plain' }))) return; } catch { }
+    fetch(hbUrl, { method: 'POST', body, keepalive: true, headers: { 'Content-Type': 'text/plain' } }).catch(() => {});
+  };
+  let timer = null;
+  const start = () => { if (timer) return; beat(false); timer = setInterval(() => beat(false), 45e3); };
+  const stop = bye => { clearInterval(timer); timer = null; if (bye) beat(true); };
+  if (document.visibilityState === 'visible') start();
+  document.addEventListener('visibilitychange', () => (document.visibilityState === 'visible' ? start() : stop(true)));
+  addEventListener('pagehide', () => stop(true));
+
   // ボタン・操作（名前は管理画面の「押されたボタン・操作」にそのまま出ます）
   window.subTrack = name => send({ e: String(name).slice(0, 40) });
 

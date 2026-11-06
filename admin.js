@@ -434,6 +434,7 @@
         <div class="seg" id="statDays">
           ${[7, 30, 90].map(d => `<button type="button" data-days="${d}" class="${statDays === d ? 'on' : ''}">${d}日</button>`).join('')}
         </div>
+        <div class="live" id="liveBox"><span class="live-dot"></span><div><small>いま見ている人</small><b id="liveNum">…</b></div><p class="muted" id="livePages"></p></div>
         <div id="statBody"><p class="muted">読み込み中…</p></div>
       </div>`;
     },
@@ -571,7 +572,20 @@
   // ---------- アクセス数 ----------
   const num = n => Number(n || 0).toLocaleString('ja-JP');
   const PAGE_NAMES = { '/': 'トップ（診断）', '/index.html': 'トップ（診断）', '/hacks.html': 'ライフハック78選' };
+  // いま見ている人（このタブを開いている間、15秒ごとに更新）
+  let liveTimer = null;
+  async function refreshLive() {
+    if (tab !== 'stats' || !$('#liveNum')) { clearInterval(liveTimer); liveTimer = null; return; }
+    try {
+      const d = await api('/live');
+      if (!$('#liveNum')) return;
+      $('#liveNum').textContent = `${num(d.total)}人`;
+      $('#livePages').textContent = d.total ? d.pages.map(p => `${PAGE_NAMES[p.key] || p.key}：${p.n}人`).join('　') + `（${new Date(d.at).toLocaleTimeString('ja-JP')} 時点）` : `いまは誰も見ていません（${new Date(d.at).toLocaleTimeString('ja-JP')} 時点）`;
+    } catch { /* 次の更新で取り直す */ }
+  }
   async function bindStats() {
+    refreshLive();
+    if (!liveTimer) liveTimer = setInterval(refreshLive, 15e3);
     $$('#statDays [data-days]').forEach(b => b.onclick = () => { statDays = +b.dataset.days; render(); });
     const box = $('#statBody');
     let d;

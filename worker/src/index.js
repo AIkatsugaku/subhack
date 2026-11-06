@@ -133,6 +133,7 @@ async function handle(req, env, url) {
 
   // アクセスの記録（公開サイトから sendBeacon で届く）
   if (path === '/t' && req.method === 'POST') return track(req, env, body);
+  if (path === '/hb' && req.method === 'POST') return heartbeat(req, env, body);
 
   if (path === '/auth/login' && req.method === 'POST') {
     if (tooMany(ip)) return fail(429, 'too_many', 'ログインの失敗が続いています。10分ほど待ってからお試しください');
@@ -142,7 +143,8 @@ async function handle(req, env, url) {
       return fail(401, 'bad_login', 'IDかパスワードが違います');
     }
     failures.delete(ip);
-    await env.DB.prepare('UPDATE users SET last_login = ? WHERE id = ?').bind(nowIso(), user.id).run();
+    // 書き込みの上限に達した日でもログインはできるように
+    try { await env.DB.prepare('UPDATE users SET last_login = ? WHERE id = ?').bind(nowIso(), user.id).run(); } catch (e) { console.error(e); }
     return json({ token: await issueSession(env, user), user: { id: user.id, name: user.name, role: user.role } });
   }
 
@@ -207,6 +209,7 @@ async function handle(req, env, url) {
   }
 
   if (path === '/stats' && req.method === 'GET') return stats(env, url);
+  if (path === '/live' && req.method === 'GET') return live(env);
 
   // ---------- メンバー管理（オーナーだけ） ----------
   if (path === '/users' && req.method === 'GET') {
@@ -273,6 +276,30 @@ async function track(req, env, b) {
   if (ev) add('ev', ev);
   if (stmts.length) await env.DB.batch(stmts);
   return new Response(null, { status: 204 });
+}
+
+// ---------- いま見ている人 ----------
+const LIVE_MS = 120e3;
+async function heartbeat(req, env, b) {
+  if (BOT_RE.test(req.headers.get('User-Agent') || '')) return new Response(null, { status: 204 });
+  const vid = String(b.vid || '');
+  if (!/^[a-z0-9]{8,24}$/.test(vid)) return new Response(null, { status: 204 });
+  if (b.bye) {
+    await env.DB.prepare('DELETE FROM presence WHERE vid = ?').bind(vid).run();
+    return new Response(null, { status: 204 });
+  }
+  const page = String(b.p || '/').slice(0, 60);
+  const now = Date.now();
+  const stmts = [env.DB.prepare('INSERT INTO presence (vid, page, seen) VALUES (?, ?, ?) ON CONFLICT(vid) DO UPDATE SET page = excluded.page, seen = excluded.seen')
+    .bind(vid, /^\/[\w.\-/]*$/.test(page) ? page : '/', now)];
+  // ときどき古い合図を片付ける
+  if (Math.random() < 0.02) stmts.push(env.DB.prepare('DELETE FROM presence WHERE seen < ?').bind(now - 10 * 60e3));
+  await env.DB.batch(stmts);
+  return new Response(null, { status: 204 });
+}
+async function live(env) {
+  const { results } = await env.DB.prepare('SELECT page, COUNT(*) AS n FROM presence WHERE seen > ? GROUP BY page ORDER BY n DESC').bind(Date.now() - LIVE_MS).all();
+  return json({ total: results.reduce((a, r) => a + r.n, 0), pages: results.map(r => ({ key: r.page, n: r.n })), at: nowIso() });
 }
 
 async function stats(env, url) {

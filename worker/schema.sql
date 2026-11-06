@@ -25,3 +25,12 @@ CREATE TABLE IF NOT EXISTS daily (
   n INTEGER NOT NULL DEFAULT 0,
   PRIMARY KEY (day, kind, key)
 );
+
+-- いま見ている人（ページを開いている間、45秒ごとに届く合図。2分届かなければ数えない）
+-- vid はタブごとのでたらめな番号で、個人とは結びつかない
+CREATE TABLE IF NOT EXISTS presence (
+  vid TEXT PRIMARY KEY,
+  page TEXT NOT NULL,
+  seen INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS presence_seen ON presence (seen);
