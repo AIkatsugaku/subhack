@@ -12,6 +12,20 @@ function lineMessageUrl(text) {
   return `https://line.me/R/oaMessage/${encodeURIComponent(LINE.id)}/?${encodeURIComponent(text)}`;
 }
 
+// 見直しの月の選択肢（今月〜24か月先）。値は YYYY-MM
+function reviewMonths() {
+  const d = new Date(); d.setDate(1);
+  return Array.from({ length: 25 }, (_, k) => {
+    const m = new Date(d.getFullYear(), d.getMonth() + k, 1);
+    return { v: `${m.getFullYear()}-${String(m.getMonth() + 1).padStart(2, '0')}`, label: `${m.getFullYear()}年${m.getMonth() + 1}月` };
+  });
+}
+// 表示用：見直しは「2026年12月」、解約は「2026/12/15」
+function remindLabel(r) {
+  if (r.type === 'review' && /^\d{4}-\d{2}/.test(r.date || '')) { const [y, m] = r.date.split('-'); return `${y}年${Number(m)}月`; }
+  return String(r.date || '').replace(/-/g, '/');
+}
+
 function buildMember({ items, SVC, yen, esc, icoHTML, iconOf }) {
   const nameOf = i => i.label || i.name || (SVC[i.sid]?.n || '').replace(/\n/g, '');
   const rows = items.map(i => {
@@ -23,7 +37,10 @@ function buildMember({ items, SVC, yen, esc, icoHTML, iconOf }) {
         <option value="">通知なし</option>
         ${Object.entries(REMIND_TYPES).map(([k, v]) => `<option value="${k}"${r.type === k ? ' selected' : ''}>${v}</option>`).join('')}
       </select>
-      <input class="mb-date" type="date" value="${esc(r.date || '')}" aria-label="日付"${r.type ? '' : ' hidden'}>
+      <input class="mb-date" type="date" value="${esc(r.type === 'cancel' ? (r.date || '') : '')}" aria-label="解約したい日"${r.type === 'cancel' ? '' : ' hidden'}>
+      <select class="mb-month" aria-label="見直したい月"${r.type === 'review' ? '' : ' hidden'}>
+        ${reviewMonths().map(o => `<option value="${o.v}"${(r.type === 'review' && (r.date || '').startsWith(o.v)) ? ' selected' : ''}>${o.label}</option>`).join('')}
+      </select>
     </div>`;
   }).join('');
 
@@ -31,10 +48,10 @@ function buildMember({ items, SVC, yen, esc, icoHTML, iconOf }) {
   return `
     <div class="panel mb" id="memberPanel">
       <h3>🔔 LINE登録で、解約・見直しの時期をお知らせ</h3>
-      <p class="mb-lead">無料のLINE登録だけで使えます。「無料期間が終わる前に解約したい」「更新月に見直したい」日をLINEでお知らせします。</p>
+      <p class="mb-lead">無料のLINE登録だけで使えます。「無料期間が終わる前に解約したい」「更新月に見直したい」時期をLINEでお知らせします。</p>
       <ol class="mb-steps">
         <li><b>1</b><span>LINE公式アカウントを友だち追加（無料）</span></li>
-        <li><b>2</b><span>下のリストで、通知してほしいサービスに日付を入れる</span></li>
+        <li><b>2</b><span>下のリストで、通知してほしいサービスで「解約したい日」か「見直したい月」を選ぶ</span></li>
         <li><b>3</b><span>「この予定でLINE通知をオンにする」を押して送信</span></li>
       </ol>
       ${LINE.icon || LINE.qr ? `<div class="line-card">
@@ -66,7 +83,7 @@ function bindMember(root, { getItems, save, yen, SVC, toast }) {
   const nameOf = i => i.label || i.name || (SVC[i.sid]?.n || '').replace(/\n/g, '');
   const reminders = () => getItems().filter(i => i.remind?.type && i.remind.date)
     .sort((a, b) => a.remind.date.localeCompare(b.remind.date));
-  const fmt = d => d.replace(/-/g, '/');
+  const fmt = r => remindLabel(r);
   const openUrl = url => window.open(url, '_blank', 'noopener');
   const needLine = () => { toast('LINE公式アカウントは準備中です'); };
   // スマホならLINEアプリで直接開く。パソコンでは line.me/R/… が開けないので、QRコードとコピーで案内する
@@ -80,39 +97,47 @@ function bindMember(root, { getItems, save, yen, SVC, toast }) {
 
   const updateCount = () => {
     const n = reminders().length;
-    root.querySelector('#mbCount').textContent = n ? `${n}件の予定を登録中` : '日付を入れるとここに件数が出ます';
+    root.querySelector('#mbCount').textContent = n ? `${n}件の予定を登録中` : '予定を選ぶとここに件数が出ます';
   };
 
   root.querySelectorAll('.mb-row').forEach(row => {
     const it = () => getItems().find(i => i.uid === row.dataset.uid);
-    const type = row.querySelector('.mb-type'), date = row.querySelector('.mb-date');
+    const type = row.querySelector('.mb-type'), date = row.querySelector('.mb-date'), month = row.querySelector('.mb-month');
     const store = () => {
       const i = it(); if (!i) return;
-      if (type.value) i.remind = { type: type.value, date: date.value };
+      // 見直しは月の1日として持つ（並べ替え・カレンダー用）
+      if (type.value === 'review') i.remind = { type: 'review', date: `${month.value}-01` };
+      else if (type.value === 'cancel') i.remind = { type: 'cancel', date: date.value };
       else delete i.remind;
       save(); updateCount();
     };
     type.onchange = () => {
-      date.hidden = !type.value;
-      // 初期値は1か月後（無料期間・更新月の目安）
-      if (type.value && !date.value) {
+      date.hidden = type.value !== 'cancel';
+      month.hidden = type.value !== 'review';
+      if (type.value === 'cancel' && !date.value) {
+        // 解約の初期値は1か月後（無料期間の目安）
         const d = new Date(); d.setMonth(d.getMonth() + 1);
         date.value = d.toISOString().slice(0, 10);
+      }
+      if (type.value === 'review' && !row.dataset.monthSet) {
+        // 見直しの初期値は来月
+        month.selectedIndex = 1; row.dataset.monthSet = '1';
       }
       store();
     };
     date.onchange = store;
+    month.onchange = () => { row.dataset.monthSet = '1'; store(); };
   });
   updateCount();
 
   // カレンダー（.ics）：予定日の前日 9:00 に通知
   root.querySelector('#mbCalendar').onclick = () => {
     const list = reminders();
-    if (!list.length) { toast('通知したいサービスに日付を入れてください'); return; }
+    if (!list.length) { toast('通知したいサービスの予定（解約の日・見直しの月）を選んでください'); return; }
     const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
     const icsEsc = s => String(s).replace(/[\\;,]/g, c => '\\' + c).replace(/\n/g, '\\n');
     const events = list.map(i => {
-      const title = `【${REMIND_TYPES[i.remind.type]}】${nameOf(i)}（¥${yen(i.price)}/月）`;
+      const title = `【${REMIND_TYPES[i.remind.type]}${i.remind.type === 'review' ? `（${fmt(i.remind)}）` : ''}】${nameOf(i)}（¥${yen(i.price)}/月）`;
       return [
         'BEGIN:VEVENT',
         `UID:${i.uid}-${i.remind.date}@subsc`,
@@ -135,8 +160,8 @@ function bindMember(root, { getItems, save, yen, SVC, toast }) {
   // LINE に予定を送る
   root.querySelector('#mbLine').onclick = () => {
     const list = reminders();
-    if (!list.length) { toast('通知したいサービスに日付を入れてください'); return; }
-    const text = ['【通知の登録】', ...list.map(i => `・${fmt(i.remind.date)} ${nameOf(i)}（¥${yen(i.price)}/月）を${REMIND_TYPES[i.remind.type]}`), '', 'この日が近づいたら教えてください。'].join('\n');
+    if (!list.length) { toast('通知したいサービスの予定（解約の日・見直しの月）を選んでください'); return; }
+    const text = ['【通知の登録】', ...list.map(i => `・${fmt(i.remind)} ${nameOf(i)}（¥${yen(i.price)}/月）を${REMIND_TYPES[i.remind.type]}`), '', 'この時期が近づいたら教えてください。'].join('\n');
     sendLine(text);
   };
 

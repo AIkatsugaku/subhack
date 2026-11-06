@@ -320,8 +320,8 @@ details p, details .ptable { padding: 0 14px 12px; margin: 0; font-size: 13px; }
 .mb-name { flex: 1; min-width: 90px; }
 .mb-name b { display: block; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .mb-name small { font-size: 11px; color: var(--sub); }
-.mb-type, .mb-date { height: 34px; border: 1px solid var(--line); border-radius: 8px; padding: 0 6px; font: inherit; font-size: 12px; background: #fff; color: var(--ink); }
-.mb-date { width: 132px; }
+.mb-type, .mb-date, .mb-month { height: 34px; border: 1px solid var(--line); border-radius: 8px; padding: 0 6px; font: inherit; font-size: 12px; background: #fff; color: var(--ink); }
+.mb-date, .mb-month { width: 132px; }
 .mb-count { font-size: 12px; color: var(--accent); font-weight: 700; margin: 8px 0 0; }
 .mb-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .mb-btns .btn { font-size: 13px; }
