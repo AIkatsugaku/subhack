@@ -77,7 +77,7 @@
 
 ## 管理画面（admin.html）
 
-本部用の管理画面です： https://aikatsugaku.github.io/subhack/admin.html
+本部用の管理画面です： https://www.sabu-hack.com/admin.html
 
 - LINE公式アカウント（ベーシックID・友だち追加URL）、有料会員、サービス別アフィリエイト、見直しレポートの乗り換え先・申込URL、おすすめ枠、基本設定を編集できます
 - 「保存して公開」で `settings.json` が GitHub 上で更新され、1〜2分で公開サイトに反映されます
