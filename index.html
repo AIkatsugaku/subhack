@@ -17,7 +17,7 @@
 <meta property="og:locale" content="ja_JP">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://www.sabu-hack.com/images/og.jpg">
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://www.sabu-hack.com/#website","url":"https://www.sabu-hack.com/","name":"サブハック","alternateName":["サブスクハック","サブハック（サブスクハック）","sabu-hack"],"inLanguage":"ja"},{"@type":"WebApplication","name":"サブハック（サブスクハック）","url":"https://www.sabu-hack.com/","applicationCategory":"FinanceApplication","operatingSystem":"Web","inLanguage":"ja","description":"使っているサブスク・スマホ代・光回線などを選ぶだけで、毎月の合計と見直しポイントがわかる無料のサブスク管理ツール。","offers":{"@type":"Offer","price":"0","priceCurrency":"JPY"}},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"入力した内容はどこかに送られますか？","acceptedAnswer":{"@type":"Answer","text":"送られません。選んだサービスや金額は、お使いのブラウザの中だけに保存されます。サイトの改善のため、見たページや押したボタンの種類だけを匿名で数えています（入力した内容や、個人を特定する情報は送りません）。"}},{"@type":"Question","name":"年払いのサービスは？","acceptedAnswer":{"@type":"Answer","text":"「年額（月割り）」のプランを選ぶか、「金額を直接入力」で年額を選んで入力すると、12で割って計算します。"}},{"@type":"Question","name":"同じサービスを何件も入れられますか？","acceptedAnswer":{"@type":"Answer","text":"「複数OK」と書かれたもの（推し・ジム・スマホなど）は何件でも追加できます。"}},{"@type":"Question","name":"全部消したいときは？","acceptedAnswer":{"@type":"Answer","text":"画面下の件数を押して「マイリスト」を開き、いちばん下の「すべて削除」を押してください。"}}]}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://www.sabu-hack.com/#website","url":"https://www.sabu-hack.com/","name":"サブハック","alternateName":["サブスクハック","サブハック（サブスクハック）","sabu-hack"],"inLanguage":"ja","publisher":{"@id":"https://www.sabu-hack.com/#org"}},{"@type":"WebApplication","name":"サブハック（サブスクハック）","url":"https://www.sabu-hack.com/","applicationCategory":"FinanceApplication","operatingSystem":"Web","inLanguage":"ja","description":"使っているサブスク・スマホ代・光回線などを選ぶだけで、毎月の合計と見直しポイントがわかる無料のサブスク管理ツール。","offers":{"@type":"Offer","price":"0","priceCurrency":"JPY"}},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"入力した内容はどこかに送られますか？","acceptedAnswer":{"@type":"Answer","text":"送られません。選んだサービスや金額は、お使いのブラウザの中だけに保存されます。サイトの改善のため、見たページや押したボタンの種類だけを匿名で数えています（入力した内容や、個人を特定する情報は送りません）。"}},{"@type":"Question","name":"年払いのサービスは？","acceptedAnswer":{"@type":"Answer","text":"「年額（月割り）」のプランを選ぶか、「金額を直接入力」で年額を選んで入力すると、12で割って計算します。"}},{"@type":"Question","name":"同じサービスを何件も入れられますか？","acceptedAnswer":{"@type":"Answer","text":"「複数OK」と書かれたもの（推し・ジム・スマホなど）は何件でも追加できます。"}},{"@type":"Question","name":"全部消したいときは？","acceptedAnswer":{"@type":"Answer","text":"画面下の件数を押して「マイリスト」を開き、いちばん下の「すべて削除」を押してください。"}}]},{"@type":"Organization","@id":"https://www.sabu-hack.com/#org","name":"サブハック","alternateName":"サブスクハック","url":"https://www.sabu-hack.com/","logo":"https://www.sabu-hack.com/images/icon-1024.png","sameAs":["https://lin.ee/NqFzPUX"]}]}</script>
 <meta name="theme-color" content="#F7F5F0">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -102,6 +102,7 @@
   <section class="content" id="prices">
     <h2>サブスク料金一覧（対応サービスと月額の目安）</h2>
     <p>このサイトで選べるサービスの月額（税込・目安）です。年払いは12で割った金額です。最新の料金は各公式サイトでご確認ください。</p>
+    <p class="price-links">カテゴリ別の料金比較：<a href="price/video.html">動画</a>・<a href="price/music.html">音楽</a>・<a href="price/ai.html">AI</a>・<a href="price/cloud.html">クラウド</a>・<a href="price/book.html">読書・マンガ</a>・<a href="price/game.html">ゲーム</a>・<a href="price/mobile.html">スマホ</a>・<a href="price/net.html">光回線</a>・<a href="price/">すべて見る</a></p>
     <div id="priceTables"></div>
   </section>
 
@@ -119,6 +120,7 @@
   <footer class="ftr">
     <p>※本サイトはアフィリエイトプログラムを利用しています。「PR」表記のリンクから申し込みがあった場合、運営者に報酬が支払われることがあります。</p>
     <p>※料金は目安です。最新の料金・条件は各サービスの公式サイトでご確認ください。各サービス名・ロゴは各社の商標です。</p>
+    <p class="ftr-links"><a href="price/">サブスク料金一覧</a> ／ <a href="hacks.html">ライフハック</a> ／ <a href="about.html">サブハックについて</a></p>
     <p class="copy">© <span id="year"></span> サブハック（サブスクハック）</p>
   </footer>
 </main>

@@ -127,3 +127,11 @@
 - **トークンの期限切れ:** オーナーが「👥 メンバー」の「保存用の GitHub トークン」から登録し直す
 - **アクセス数:** 公開サイトの `track.js` が、表示したページ・その日の初めての訪問か・流入元のドメイン・押したボタンの種類だけを送り、1日ごとに数える（入力内容や個人を特定する情報は送らない）。「📈 アクセス数」で見られる。localhost では送らない（`?track=1` を付けると送る）
 - **Worker の更新:** `cd worker && npm install && npx wrangler deploy`（obuchi@ でログインしていること）。表は `schema.sql`
+
+## 検索エンジン・AI 向けのページ（tools/）
+
+ChatGPT・Claude・Perplexity などの AI は、JavaScript を動かさずに HTML だけを読むことが多いので、読めるページを別に作っています。
+
+- `node tools/build-static.js` … `data.js`・`hacks-data.js` から `price/`（サブスク料金一覧・カテゴリ別）、`hacks.html` の要約、`llms.txt`、`sitemap.xml` を作り直す。**料金やライフハックを変えたら実行してから公開**
+- `node tools/indexnow.js` … 公開後に実行すると、Bing などに更新を知らせる（ChatGPT の検索は Bing の情報も使う）。鍵ファイルはルートの `*.txt`（消さない）
+- `robots.txt` で主な AI のクローラー（GPTBot・ClaudeBot・PerplexityBot など）を許可。`about.html` は運営方針・データの扱い
