@@ -272,6 +272,24 @@ async function track(req, env, b) {
     const ref = clean(b.r, 80).toLowerCase();
     if (ref && /^[a-z0-9.-]+$/.test(ref)) add('ref', ref);
   }
+  // その日はじめての訪問のときだけ、端末・地域・何日目の訪問かを数える（書き込みを少なくするため）
+  if (b.v) {
+    const pick = (v, list) => (list.includes(v) ? v : '');
+    const dev = pick(b.dev, ['スマホ', 'タブレット', 'PC']);
+    const os = pick(b.os, ['iPhone・iPad', 'Android', 'Windows', 'Mac', 'その他']);
+    const freq = pick(b.freq, ['はじめて', '2〜3日目', '4〜9日目', '10日以上']);
+    if (dev) add('dev', dev);
+    if (os) add('os', os);
+    if (freq) add('freq', freq);
+    const cf = req.cf || {};
+    const region = cf.country === 'JP' ? clean(cf.region, 40) : (cf.country ? `海外（${clean(cf.country, 4)}）` : '');
+    if (region) add('reg', region);
+  }
+  // ページを見た時間帯（日本時間）
+  if (page) add('hour', String(new Date(Date.now() + 9 * 3600e3).getUTCHours()).padStart(2, '0'));
+  // 診断で任意に答えてもらった性別・年代
+  if (['女性', '男性', 'その他・答えない'].includes(b.sex)) add('sex', b.sex);
+  if (['10代', '20代', '30代', '40代', '50代', '60代以上'].includes(b.age)) add('age', b.age);
   const ev = clean(b.e, 40);
   if (ev) add('ev', ev);
   if (stmts.length) await env.DB.batch(stmts);
@@ -307,7 +325,7 @@ async function stats(env, url) {
   const from = jstDay(days - 1);
   const [daily, tops] = await Promise.all([
     env.DB.prepare("SELECT day, kind, SUM(n) AS n FROM daily WHERE day >= ? AND kind IN ('pv', 'uv') GROUP BY day, kind ORDER BY day").bind(from).all(),
-    env.DB.prepare("SELECT kind, key, SUM(n) AS n FROM daily WHERE day >= ? AND kind IN ('pv', 'ref', 'ev') GROUP BY kind, key ORDER BY n DESC").bind(from).all(),
+    env.DB.prepare("SELECT kind, key, SUM(n) AS n FROM daily WHERE day >= ? AND kind IN ('pv', 'ref', 'ev', 'dev', 'os', 'freq', 'reg', 'hour', 'sex', 'age') GROUP BY kind, key ORDER BY n DESC").bind(from).all(),
   ]);
   const series = {};
   for (let i = days - 1; i >= 0; i--) series[jstDay(i)] = { pv: 0, uv: 0 };
@@ -317,6 +335,7 @@ async function stats(env, url) {
     days, from, today: jstDay(),
     series: Object.entries(series).map(([day, v]) => ({ day, ...v })),
     pages: top('pv'), refs: top('ref'), events: top('ev'),
+    insights: Object.fromEntries(['dev', 'os', 'freq', 'reg', 'hour', 'sex', 'age'].map(k => [k, tops.results.filter(r => r.kind === k).map(r => ({ key: r.key, n: r.n }))])),
   });
 }
 

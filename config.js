@@ -19,6 +19,15 @@ const API = {
 };
 
 /*
+ * Google アナリティクス（任意）
+ * 測定ID（G-XXXXXXXXXX）を入れると、公開サイトで読み込みます。管理画面の基本設定からも入れられます。
+ * 男女・年代は Google アナリティクスの「Google シグナル」を有効にすると、訪問が一定数を超えたら推定で表示されます。
+ */
+const GA = {
+  id: '',
+};
+
+/*
  * LINE公式アカウント
  * - id: ベーシックID（@から始まるID。例: '@123abcde'）
  * - addFriendUrl: 友だち追加URL（例: 'https://lin.ee/xxxxxxx'）

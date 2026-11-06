@@ -4,6 +4,20 @@
  * 入力した内容や、個人を特定する情報は送りません。
  */
 (() => {
+  // Google アナリティクス（管理画面の基本設定で測定IDを入れたときだけ読み込む）
+  const loadGA = () => {
+    const id = (typeof GA !== 'undefined' && GA.id || '').trim();
+    if (!/^G-[A-Z0-9]{4,}$/.test(id) || window.gtag || /^(localhost|127\.)/.test(location.hostname)) return;
+    const s = document.createElement('script');
+    s.async = true; s.src = `https://www.googletagmanager.com/gtag/js?id=${id}`;
+    document.head.appendChild(s);
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function () { dataLayer.push(arguments); };
+    gtag('js', new Date());
+    gtag('config', id);
+  };
+  (window.settingsReady || Promise.resolve()).then(loadGA);
+
   const url = (typeof API !== 'undefined' && API.url) ? `${API.url}/t` : '';
   if (!url || /^(localhost|127\.)/.test(location.hostname) && !/[?&]track=1/.test(location.search)) {
     window.subTrack = () => {};
@@ -24,7 +38,19 @@
   let ref = '';
   try { const h = new URL(document.referrer).hostname; if (h && !/sabu-hack\.com$|github\.io$/.test(h)) ref = h; } catch { }
   const page = location.pathname.replace(/^\/subhack/, '') || '/';
-  send({ p: page, v: first, r: ref });
+  const data = { p: page, v: first, r: ref };
+  if (first) {
+    // 端末・OS（画面の大きさとブラウザの種類から。細かい機種は送らない）
+    const ua = navigator.userAgent;
+    const ipad = /iPad/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+    data.dev = ipad || /Tablet|Android(?!.*Mobile)/.test(ua) ? 'タブレット' : /Mobi|iPhone|Android/.test(ua) ? 'スマホ' : 'PC';
+    data.os = /iPhone|iPad|iPod/.test(ua) || ipad ? 'iPhone・iPad' : /Android/.test(ua) ? 'Android' : /Windows/.test(ua) ? 'Windows' : /Mac OS X/.test(ua) ? 'Mac' : 'その他';
+    // 何日目の訪問か（このブラウザで来た日数を数えるだけ）
+    let days = 1;
+    try { days = (Number(localStorage.getItem('subhack.days')) || 0) + 1; localStorage.setItem('subhack.days', String(days)); } catch { }
+    data.freq = days <= 1 ? 'はじめて' : days <= 3 ? '2〜3日目' : days <= 9 ? '4〜9日目' : '10日以上';
+  }
+  send(data);
 
   // いま見ている人：開いている間だけ45秒ごとに合図を送る（タブごとのでたらめな番号だけ）
   const hbUrl = url.replace(/\/t$/, '/hb');
@@ -46,6 +72,8 @@
 
   // ボタン・操作（名前は管理画面の「押されたボタン・操作」にそのまま出ます）
   window.subTrack = name => send({ e: String(name).slice(0, 40) });
+  // 診断で任意に答えてもらった性別・年代
+  window.subTrackDemo = (sex, age) => send({ ...(sex ? { sex } : {}), ...(age ? { age } : {}) });
 
   // 外へのリンク：LINE・X・PRリンク
   const kindOf = href => {

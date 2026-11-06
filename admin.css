@@ -179,3 +179,19 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
 .live-dot { width: 10px; height: 10px; border-radius: 50%; background: #06C755; box-shadow: 0 0 0 0 rgba(6,199,85,.5); animation: livepulse 1.8s infinite; }
 @keyframes livepulse { 0% { box-shadow: 0 0 0 0 rgba(6,199,85,.5); } 70% { box-shadow: 0 0 0 10px rgba(6,199,85,0); } 100% { box-shadow: 0 0 0 0 rgba(6,199,85,0); } }
 @media (prefers-reduced-motion: reduce) { .live-dot { animation: none; } }
+
+/* インサイト */
+.ins-h { margin-top: 28px !important; }
+.ins-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-top: 12px; }
+.ins { background: var(--soft); border-radius: 14px; padding: 14px; }
+.ins h4 { margin: 0 0 8px; font-size: 13px; color: var(--navy); display: flex; justify-content: space-between; align-items: baseline; }
+.ins h4 small { font-size: 11px; color: var(--sub); font-weight: 400; }
+.ins-row { display: grid; grid-template-columns: 92px 1fr 40px; gap: 8px; align-items: center; font-size: 12px; padding: 3px 0; }
+.ins-row span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ins-bar { height: 10px; background: #fff; border-radius: 99px; overflow: hidden; }
+.ins-bar i { display: block; height: 100%; background: var(--accent); border-radius: 99px; }
+.ins-row b { text-align: right; font-variant-numeric: tabular-nums; }
+.hours { display: flex; align-items: flex-end; gap: 3px; height: 110px; margin-top: 10px; }
+.hours div { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; }
+.hours i { display: block; width: 100%; background: #BFE3DC; border-radius: 3px 3px 0 0; min-height: 1px; }
+.hours small { font-size: 10px; color: var(--sub); height: 14px; }

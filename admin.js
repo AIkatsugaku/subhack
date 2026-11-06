@@ -92,7 +92,7 @@
   const b64decode = b64 => decodeURIComponent(escape(atob(b64.replace(/\n/g, ''))));
 
   function defaults() {
-    return clone({ updatedAt: '', SITE, LINE, MEMBERSHIP, AFFILIATE, RECOMMENDS, REPORT, REPORT_SHOW, GUIDES });
+    return clone({ updatedAt: '', SITE, GA, LINE, MEMBERSHIP, AFFILIATE, RECOMMENDS, REPORT, REPORT_SHOW, GUIDES });
   }
 
   async function loadSettings() {
@@ -425,6 +425,7 @@
           ${inputHTML('SITE.hashtag', { label: 'シェア時のハッシュタグ（#なし）' })}
         </div>
         ${inputHTML('SITE.url', { label: '公開URL', hint: 'Xでシェアしたときに付くURLです' })}
+        ${inputHTML('GA.id', { label: 'Google アナリティクスの測定ID', ph: 'G-XXXXXXXXXX', hint: '入れると公開サイトで Google アナリティクスが動きます。男女・年代は Google アナリティクスの管理画面で「Google シグナル」を有効にすると、推定で見られます' })}
       </div>`;
     },
     stats() {
@@ -571,6 +572,9 @@
 
   // ---------- アクセス数 ----------
   const num = n => Number(n || 0).toLocaleString('ja-JP');
+  // Cloudflare の地域名（英語）を都道府県名に
+  const PREF = { Hokkaido: '北海道', Aomori: '青森県', Iwate: '岩手県', Miyagi: '宮城県', Akita: '秋田県', Yamagata: '山形県', Fukushima: '福島県', Ibaraki: '茨城県', Tochigi: '栃木県', Gunma: '群馬県', Saitama: '埼玉県', Chiba: '千葉県', Tokyo: '東京都', Kanagawa: '神奈川県', Niigata: '新潟県', Toyama: '富山県', Ishikawa: '石川県', Fukui: '福井県', Yamanashi: '山梨県', Nagano: '長野県', Gifu: '岐阜県', Shizuoka: '静岡県', Aichi: '愛知県', Mie: '三重県', Shiga: '滋賀県', Kyoto: '京都府', Osaka: '大阪府', Hyogo: '兵庫県', Nara: '奈良県', Wakayama: '和歌山県', Tottori: '鳥取県', Shimane: '島根県', Okayama: '岡山県', Hiroshima: '広島県', Yamaguchi: '山口県', Tokushima: '徳島県', Kagawa: '香川県', Ehime: '愛媛県', Kochi: '高知県', Fukuoka: '福岡県', Saga: '佐賀県', Nagasaki: '長崎県', Kumamoto: '熊本県', Oita: '大分県', Miyazaki: '宮崎県', Kagoshima: '鹿児島県', Okinawa: '沖縄県' };
+  const prefName = k => PREF[k] || k;
   const PAGE_NAMES = { '/': 'トップ（診断）', '/index.html': 'トップ（診断）', '/hacks.html': 'ライフハック78選' };
   // いま見ている人（このタブを開いている間、15秒ごとに更新）
   let liveTimer = null;
@@ -592,6 +596,16 @@
     try { d = await api(`/stats?days=${statDays}`); } catch (e) { box.innerHTML = `<p class="err">${explain(e)}</p>`; return; }
     if (tab !== 'stats') return;
     const sum = k => d.series.reduce((a, r) => a + r[k], 0);
+    const ins = d.insights || { dev: [], os: [], freq: [], reg: [], hour: [], sex: [], age: [] };
+    const hourMax = Math.max(1, ...ins.hour.map(r => r.n));
+    // 割合の横棒（order があればその順で、なければ多い順）
+    const insight = (title, rows, order, unit = '人') => {
+      const list = order ? order.map(k => ({ key: k, n: (rows.find(r => r.key === k) || {}).n || 0 })) : rows;
+      const total = list.reduce((a, r) => a + r.n, 0);
+      return `<div class="ins"><h4>${esc(title)}<small>${total ? `計 ${num(total)}${unit === '回答' ? '件の回答' : unit === '来た日数' ? '人' : '人'}` : ''}</small></h4>
+        ${total ? list.map(r => { const p = Math.round(r.n / total * 100); return `<div class="ins-row"><span>${esc(r.key)}</span><div class="ins-bar"><i style="width:${p}%"></i></div><b>${p}%</b></div>`; }).join('') : '<p class="muted">まだデータがありません</p>'}
+      </div>`;
+    };
     const todayRow = d.series[d.series.length - 1] || { pv: 0, uv: 0 };
     const max = Math.max(1, ...d.series.map(r => r.pv));
     const list = (rows, label, fmt = k => esc(k)) => rows.length
@@ -612,7 +626,19 @@
         <div><h3>よく見られたページ</h3>${list(d.pages, 'ページ', k => esc(PAGE_NAMES[k] || k))}</div>
         <div><h3>どこから来たか</h3>${list(d.refs, '流入元')}</div>
       </div>
-      <h3>押されたボタン・操作</h3>${list(d.events, '操作')}`;
+      <h3>押されたボタン・操作</h3>${list(d.events, '操作')}
+      <h2 class="ins-h">インサイト</h2>
+      <p class="muted">端末・地域・何日目の訪問かは「その日はじめて来た人」1人1回で数えています。性別・年代は、診断の結果画面で任意に答えてくれた人の分です。</p>
+      <div class="ins-grid">
+        ${insight('新規・リピーター', ins.freq, ['はじめて', '2〜3日目', '4〜9日目', '10日以上'], '来た日数')}
+        ${insight('端末', ins.dev, ['スマホ', 'PC', 'タブレット'])}
+        ${insight('性別', ins.sex, ['女性', '男性', 'その他・答えない'], '回答')}
+        ${insight('年代', ins.age, ['10代', '20代', '30代', '40代', '50代', '60代以上'], '回答')}
+        ${insight('OS', ins.os, ['iPhone・iPad', 'Android', 'Windows', 'Mac', 'その他'])}
+        ${insight('地域（多い順）', ins.reg.slice(0, 10).map(r => ({ ...r, key: prefName(r.key) })))}
+      </div>
+      <h3>見られた時間帯（日本時間）</h3>
+      <div class="hours">${Array.from({ length: 24 }, (_, h) => { const k = String(h).padStart(2, '0'); const n = (ins.hour.find(r => r.key === k) || {}).n || 0; return `<div title="${h}時台：${n}回"><i style="height:${Math.round(n / hourMax * 100)}%"></i><small>${h % 3 === 0 ? h : ''}</small></div>`; }).join('')}</div>`;
   }
 
   // ---------- メンバー ----------

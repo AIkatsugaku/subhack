@@ -7,6 +7,7 @@ function applySettings(st) {
   if (!st || typeof st !== 'object') return;
   if (st.SITE) Object.assign(SITE, st.SITE);
   if (st.LINE) Object.assign(LINE, st.LINE);
+  if (st.GA && typeof GA !== 'undefined') Object.assign(GA, st.GA);
   if (st.MEMBERSHIP) Object.assign(MEMBERSHIP, st.MEMBERSHIP);
   if (st.AFFILIATE) {
     Object.keys(AFFILIATE).forEach(k => delete AFFILIATE[k]);

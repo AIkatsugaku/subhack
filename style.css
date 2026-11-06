@@ -608,3 +608,14 @@ details p, details .ptable { padding: 0 14px 12px; margin: 0; font-size: 13px; }
 .hk-more > summary { font-size: 13px; color: var(--accent); background: transparent; padding: 10px 40px 10px 4px; }
 .hk-more > .hk-rows { margin-top: 4px; }
 .hk-all { display: block; text-align: center; margin-top: 10px; font-size: 13px; font-weight: 700; color: var(--accent); text-decoration: none; padding: 8px; }
+
+/* 診断結果：性別・年代（任意） */
+.demo { position: relative; background: var(--card); border-radius: 18px; padding: 14px 16px; margin-top: 12px; }
+.demo-h { margin: 0 28px 8px 0; font-weight: 700; font-size: 13px; color: var(--navy); }
+.demo-h small { font-weight: 400; color: var(--sub); font-size: 11px; margin-left: 4px; }
+.demo-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 6px; }
+.demo-row > span { font-size: 11px; color: var(--sub); width: 30px; }
+.demo-chip { font-size: 12px; padding: 5px 11px; border-radius: 99px; background: var(--soft); color: var(--ink); }
+.demo-chip.on { background: var(--accent); color: #fff; }
+.demo-x { position: absolute; right: 10px; top: 8px; width: 28px; height: 28px; border-radius: 50%; color: var(--sub); font-size: 16px; }
+.demo-thanks { margin: 0; text-align: center; font-weight: 700; color: var(--accent); padding: 6px 0; }
