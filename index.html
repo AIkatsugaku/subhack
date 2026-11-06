@@ -3,12 +3,21 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>サブハック（サブスクハック）｜毎月のサブスク・固定費の合計を診断</title>
-<meta name="description" content="サブハック（サブスクハック）は、サブスク・スマホ代・光回線・推し活まで、使っているものを選ぶだけで毎月の合計と見直しポイントがわかる無料ツール。240以上のサービスに対応。">
-<meta property="og:title" content="毎月の“見えない出費”、ぜんぶでいくら？｜サブハック（サブスクハック）">
-<meta property="og:description" content="選ぶだけで、サブスクと固定費の合計と見直しポイントがわかる。">
+<title>サブスク管理・合計を無料で診断｜サブハック（サブスクハック）</title>
+<meta name="description" content="サブハック（サブスクハック）は、使っているサブスクを選ぶだけで毎月・年間の合計と見直しポイントがわかる無料のサブスク管理ツール。Netflix・Spotify・Amazonプライムなど240以上のサブスクとスマホ代・光回線の料金一覧、解約・節約のライフハックも。登録不要。">
+<link rel="canonical" href="https://www.sabu-hack.com/">
+<link rel="icon" href="images/icon.png">
+<link rel="apple-touch-icon" href="images/icon-1024.png">
+<meta property="og:title" content="毎月のサブスク、ぜんぶでいくら？｜サブハック（サブスクハック）">
+<meta property="og:description" content="選ぶだけで、サブスクと固定費の合計と見直しポイントがわかる無料ツール。">
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://www.sabu-hack.com/">
+<meta property="og:site_name" content="サブハック">
+<meta property="og:image" content="https://www.sabu-hack.com/images/og.jpg">
+<meta property="og:locale" content="ja_JP">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://www.sabu-hack.com/images/og.jpg">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://www.sabu-hack.com/#website","url":"https://www.sabu-hack.com/","name":"サブハック","alternateName":["サブスクハック","サブハック（サブスクハック）","sabu-hack"],"inLanguage":"ja"},{"@type":"WebApplication","name":"サブハック（サブスクハック）","url":"https://www.sabu-hack.com/","applicationCategory":"FinanceApplication","operatingSystem":"Web","inLanguage":"ja","description":"使っているサブスク・スマホ代・光回線などを選ぶだけで、毎月の合計と見直しポイントがわかる無料のサブスク管理ツール。","offers":{"@type":"Offer","price":"0","priceCurrency":"JPY"}},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"入力した内容はどこかに送られますか？","acceptedAnswer":{"@type":"Answer","text":"送られません。選んだサービスや金額は、お使いのブラウザの中だけに保存されます。サイトの改善のため、見たページや押したボタンの種類だけを匿名で数えています（入力した内容や、個人を特定する情報は送りません）。"}},{"@type":"Question","name":"年払いのサービスは？","acceptedAnswer":{"@type":"Answer","text":"「年額（月割り）」のプランを選ぶか、「金額を直接入力」で年額を選んで入力すると、12で割って計算します。"}},{"@type":"Question","name":"同じサービスを何件も入れられますか？","acceptedAnswer":{"@type":"Answer","text":"「複数OK」と書かれたもの（推し・ジム・スマホなど）は何件でも追加できます。"}},{"@type":"Question","name":"全部消したいときは？","acceptedAnswer":{"@type":"Answer","text":"画面下の件数を押して「マイリスト」を開き、いちばん下の「すべて削除」を押してください。"}}]}]}</script>
 <meta name="theme-color" content="#F7F5F0">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -33,8 +42,8 @@
 <main id="top">
   <section class="hero">
     <div class="hero-text">
-      <p class="hero-eyebrow">無料・登録不要の固定費チェッカー</p>
-      <h1>毎月の“見えない出費”、<br><em>ぜんぶ足すと</em>いくら？</h1>
+      <p class="hero-eyebrow">無料・登録不要のサブスク管理ツール</p>
+      <h1>毎月のサブスク・固定費、<br><em>ぜんぶ足すと</em>いくら？</h1>
       <p class="hero-lead">サブスク・スマホ・光回線・推し活まで。使っているものを選ぶだけで、毎月の合計と見直しポイントがわかります。</p>
       <ul class="hero-points">
         <li><b id="serviceCount">240</b>サービス対応</li>
@@ -91,7 +100,7 @@
   </section>
 
   <section class="content" id="prices">
-    <h2>対応サービスと料金の目安</h2>
+    <h2>サブスク料金一覧（対応サービスと月額の目安）</h2>
     <p>このサイトで選べるサービスの月額（税込・目安）です。年払いは12で割った金額です。最新の料金は各公式サイトでご確認ください。</p>
     <div id="priceTables"></div>
   </section>
