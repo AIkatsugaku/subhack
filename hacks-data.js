@@ -765,6 +765,6 @@ const HACKS = [
 // free: true の項目は条件なしで読めます。
 // ※シェアしたかどうかは確かめられず、ページのソースを見れば読める「ゆるい制限」です。
 const HACKS_GATE = {
-  share: true,
+  share: false,   // LINE登録を優先するため、シェアでは開かない（true にするとシェアでも開く）
   passcode: 'サブハック2026',
 };

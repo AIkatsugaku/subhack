@@ -596,3 +596,15 @@ details p, details .ptable { padding: 0 14px 12px; margin: 0; font-size: 13px; }
 .hk-notes ul { margin: 0; padding-left: 1.2em; font-size: 13px; color: #4B5551; }
 .hk-notes li { padding: 3px 0; }
 .hk-ftr { max-width: var(--w); margin: 30px auto 0; padding: 0 16px; }
+
+/* レポートのライフハック欄：LINE登録の案内と、折りたたみ */
+.hk-line-cta { display: flex; align-items: center; gap: 12px; background: #F2FBF5; border: 1.5px solid #9EDDB4; border-radius: 16px; padding: 12px 14px; margin-bottom: 10px; }
+.hk-line-cta p { flex: 1; margin: 0; }
+.hk-line-cta b { display: block; color: #0B6B33; font-size: 14px; }
+.hk-line-cta small { display: block; font-size: 11px; color: var(--sub); line-height: 1.5; margin-top: 2px; }
+.hk-line-cta .btn { width: auto; flex: none; margin: 0; height: 42px; padding: 0 14px; font-size: 13px; }
+@media (max-width: 420px) { .hk-line-cta { flex-direction: column; align-items: stretch; } .hk-line-cta .btn { width: 100%; } }
+.hk-more { margin-top: 8px; }
+.hk-more > summary { font-size: 13px; color: var(--accent); background: transparent; padding: 10px 40px 10px 4px; }
+.hk-more > .hk-rows { margin-top: 4px; }
+.hk-all { display: block; text-align: center; margin-top: 10px; font-size: 13px; font-weight: 700; color: var(--accent); text-decoration: none; padding: 8px; }

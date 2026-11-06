@@ -71,15 +71,15 @@ function hackLockHTML(compact) {
     <p class="hk-lock-h">🔒 この続きは${share ? 'シェアすると' : 'LINE登録で'}読めます</p>
     ${compact ? '' : `<p class="hk-lock-tx">${share
       ? `友だちや家族にこのページをシェアすると、${HACKS.length}件すべての手順・注意点・出典が読めるようになります。`
-      : `友だち追加すると届く「合言葉」を入れると、${HACKS.length}件すべての手順・注意点・出典が読めるようになります。`}</p>`}
+      : `LINEで友だち追加すると「合言葉」が届きます。入れると${HACKS.length}件すべての手順・注意点・出典が読めます。`}</p>`}
     <div class="hk-lock-btns">
       ${share ? `<div class="hk-share">
         <button class="btn hk-sh-line" type="button" data-hk-share="line">LINEで送る</button>
         <button class="btn x" type="button" data-hk-share="x">Xでシェア</button>
         <button class="btn ghost" type="button" data-hk-share="more">その他・リンクをコピー</button>
-      </div>` : '<button class="btn line" type="button" data-hk-line>LINEで友だち追加（無料）</button>'}
+      </div>` : '<button class="btn line big" type="button" data-hk-line>LINEで友だち追加して合言葉を受け取る（無料）</button>'}
       ${code ? `<form class="hk-code" data-hk-code>
-        <input type="text" name="code" placeholder="${share ? '合言葉をお持ちの方はこちら' : '合言葉を入力'}" autocomplete="off" aria-label="合言葉">
+        <input type="text" name="code" placeholder="${share ? '合言葉をお持ちの方はこちら' : 'LINEで届いた合言葉を入力'}" autocomplete="off" aria-label="合言葉">
         <button class="btn" type="submit">読む</button>
       </form>
       ${share && LINE.addFriendUrl ? '<button class="hk-line-link" type="button" data-hk-line>合言葉はLINE公式アカウントで受け取れます（友だち追加）›</button>' : ''}` : ''}
@@ -88,6 +88,7 @@ function hackLockHTML(compact) {
 }
 
 function hackLineAdd(toast) {
+  window.subTrack?.('ライフハックからLINE登録');
   if (LINE.addFriendUrl) window.open(LINE.addFriendUrl, '_blank', 'noopener');
   else toast('LINE公式アカウントは準備中です');
 }
@@ -123,12 +124,13 @@ function bindHackLock(root, { toast, onOpen }) {
   root.querySelectorAll('[data-hk-share]').forEach(b => b.onclick = async () => {
     if (!(await hackShare(b.dataset.hkShare, toast))) return;
     hackSave('share');
+    window.subTrack?.('ライフハック解放（シェア）');
     // シェア画面から戻ってきたときに開いているよう、少し待ってから描き直す
     setTimeout(() => { toast('シェアありがとうございます！ すべてのライフハックが読めます'); onOpen(); }, 600);
   });
   root.querySelectorAll('[data-hk-code]').forEach(f => f.onsubmit = ev => {
     ev.preventDefault();
-    if (hackTryUnlock(f.code.value)) { toast('すべてのライフハックが読めるようになりました'); onOpen(); }
+    if (hackTryUnlock(f.code.value)) { window.subTrack?.('ライフハック解放（合言葉）'); toast('すべてのライフハックが読めるようになりました'); onOpen(); }
     else { toast('合言葉が違います'); f.code.select(); }
   });
 }
@@ -149,17 +151,26 @@ function buildHackPanel({ items }) {
   const e = hackEsc;
   const mine = hacksFor(items).slice(0, 5);
   // 自分に関係するものが少ないときは、効果の大きいものを足す
-  const tops = HACKS.filter(h => h.top && !mine.includes(h)).sort((a, b) => a.top - b.top).slice(0, Math.max(0, 5 - mine.length));
-  const row = (h, pick) => `<button class="hk-row${pick ? ' pick' : ''}" type="button" data-hk="${e(h.id)}">
+  const tops = HACKS.filter(h => h.top && !mine.includes(h)).sort((x, y) => x.top - y.top).slice(0, Math.max(0, 5 - mine.length));
+  const rows = [...mine.map(h => [h, true]), ...tops.map(h => [h, false])];
+  const row = ([h, pick]) => `<button class="hk-row${pick ? ' pick' : ''}" type="button" data-hk="${e(h.id)}">
       <span class="hk-row-ico">${hackCat(h.cat).emoji}</span>
       <span class="hk-row-tx">${pick ? '<em>あなたに使える</em>' : ''}<b>${e(h.t)}</b><small>💰 ${e(h.e)}</small></span>
       <span class="hk-row-go">${hackCanRead(h) ? '読む ›' : '🔒'}</span>
     </button>`;
+  // LINE登録を先にお願いする（合言葉で開く設定で、まだ開いていない人）
+  const askLine = !hackUnlocked() && hackCodeOn() && !hackShareOn();
   return `<div class="panel hk-panel">
       <h3>あなたに使えるライフハック</h3>
-      <p class="guides-lead">公式の制度やルールを“設計どおり”に使うだけ。あなたの固定費に関係するものから並べています。</p>
-      <div class="hk-rows">${mine.map(h => row(h, true)).join('')}${tops.map(h => row(h, false)).join('')}</div>
-      <a class="btn ghost" href="hacks.html">ライフハック${HACKS.length}選をぜんぶ見る${hackUnlocked() ? '' : '（シェアで全文公開）'}</a>
+      ${askLine ? `<div class="hk-line-cta">
+        <p><b>LINE登録で${HACKS.length}件ぜんぶ読めます</b><small>友だち追加すると届く合言葉で、手順・注意点まで開きます（無料）</small></p>
+        <button class="btn line" type="button" data-hk-line>LINEで友だち追加</button>
+      </div>` : ''}
+      <div class="hk-rows">${rows.slice(0, 2).map(row).join('')}</div>
+      ${rows.length > 2 ? `<details class="hk-more"><summary>ほかに${rows.length - 2}件を見る</summary>
+        <div class="hk-rows">${rows.slice(2).map(row).join('')}</div>
+      </details>` : ''}
+      <a class="hk-all" href="hacks.html">ライフハック${HACKS.length}選をぜんぶ見る ›</a>
     </div>`;
 }
 
@@ -179,6 +190,7 @@ function bindHackPanel(root, { openSheet, toast }) {
   };
   // 開けたら欄の鍵マークを消す
   const refresh = () => root.querySelectorAll('.hk-row-go').forEach(s => { s.textContent = '読む ›'; });
+  root.querySelectorAll('.hk-panel [data-hk-line]').forEach(b => b.onclick = () => hackLineAdd(toast));
   root.querySelectorAll('[data-hk]').forEach(b => b.onclick = () => {
     const h = HACKS.find(x => x.id === b.dataset.hk);
     if (h) open(h);

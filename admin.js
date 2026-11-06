@@ -9,7 +9,8 @@
   const REPO = 'AIkatsugaku/subhack';
   const BRANCH = 'main';
   const FILE = 'settings.json';
-  const TOKEN_KEY = 'subhack.admin.token';
+  const SESSION_KEY = 'subhack.admin.session';
+  const API_URL = (typeof API !== 'undefined' && API.url) || 'https://subhack-api.obuchi.workers.dev';
 
   const $ = (s, el = document) => el.querySelector(s);
   const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -22,37 +23,41 @@
   const SVC = {}, CAT = {};
   CATEGORIES.forEach(c => { CAT[c.id] = c; c.items.forEach(s => { s.cat = c.id; SVC[s.id] = s; }); });
 
-  let token = '';
+  let session = '';  // ログインの券（API が発行。GitHub のトークンはブラウザに来ない）
+  let me = null;     // { id, name, role }
+  let hasGithubToken = true;
   let sha = null;      // settings.json の現在のバージョン
   let state = null;    // 編集中の設定
   let saved = '';      // 最後に読み込み/保存した内容（変更検知用）
   let tab = 'dash';
 
   // ---------- GitHub API ----------
-  async function gh(path, opts = {}) {
-    const res = await fetch(`https://api.github.com${path}`, {
-      ...opts,
-      headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28', ...(opts.headers || {}) },
-    });
-    const body = await res.json().catch(() => ({}));
+  // サブハック API を呼ぶ
+  async function api(path, { method = 'GET', body } = {}) {
+    let res;
+    try {
+      res = await fetch(API_URL + path, {
+        method,
+        headers: { ...(session ? { Authorization: `Bearer ${session}` } : {}), ...(body ? { 'Content-Type': 'application/json' } : {}) },
+        body: body ? JSON.stringify(body) : undefined,
+      });
+    } catch { const e = new Error('network'); e.status = 0; throw e; }
+    const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      const e = new Error(body.message || res.statusText);
-      e.status = res.status;
-      e.need = res.headers.get('x-accepted-github-permissions') || '';  // 足りない権限（GitHubが教えてくれる場合）
+      const e = new Error(data.message || res.statusText);
+      e.status = res.status; e.code = data.error || '';
+      e.need = res.headers.get('x-accepted-github-permissions') || '';
+      if (data.error === 'session' && me) sessionExpired();  // ログイン切れならログイン画面に戻す
       throw e;
     }
-    return body;
+    return data;
   }
 
-  // 保存できる権限があるか確かめる（参照されないデータを1つ作るだけで、サイトの内容は変わらない）
-  async function canWrite() {
-    try {
-      await gh(`/repos/${REPO}/git/blobs`, { method: 'POST', body: JSON.stringify({ content: 'subhack-admin-write-check', encoding: 'utf-8' }) });
-      return true;
-    } catch (e) {
-      if (e.status === 403 || e.status === 404) return false;
-      throw e;
-    }
+  // GitHub API（サーバーが預かっているトークンで中継してもらう）
+  async function gh(path, opts = {}) {
+    let body;
+    if (opts.body) { try { body = JSON.parse(opts.body); } catch { body = opts.body; } }
+    return api('/gh', { method: 'POST', body: { path, method: opts.method || 'GET', body } });
   }
 
   const TOKEN_PAGE = 'https://github.com/settings/personal-access-tokens';
@@ -65,12 +70,16 @@
 
   // GitHub のエラーを、何をすればいいかが分かる日本語にする
   function explain(e) {
+    if (e.code === 'no_github_token') return `<b>サイトに保存するための GitHub トークンが登録されていません。</b><br>${me?.role === 'owner' ? '「👥 メンバー」の「保存用の GitHub トークン」から登録してください。' : 'オーナーに登録を頼んでください。'}`;
+    if (e.code === 'session') return '<b>ログインの有効期限が切れました。</b><br>もう一度ログインしてください。';
+    if (e.status === 424) return `<b>保存用の GitHub トークンの有効期限が切れたか、無効になっています。</b><br>${me?.role === 'owner' ? `<a href="${TOKEN_PAGE}" target="_blank" rel="noopener">GitHub のトークン一覧</a>で作り直し、「👥 メンバー」から登録し直してください。` : 'オーナーに登録し直しを頼んでください。'}`;
+    if (e.code && !e.need) return `<b>${esc(e.message)}</b>`;
     if (e.status === 401) return `<b>トークンが正しくないか、有効期限が切れています。</b><br><a href="${TOKEN_PAGE}" target="_blank" rel="noopener">GitHub のトークン一覧</a>で期限を確認し、新しく作ってログインし直してください。`;
     if (e.status === 403 && /rate limit/i.test(e.message)) return '<b>短時間に操作が集中しました。</b><br>1分ほど待ってからもう一度お試しください。';
     if (e.status === 403 || (e.status === 404 && e.need)) return FIX_PERMISSION;
     if (e.status === 404) return `<b>リポジトリ（${REPO}）にアクセスできません。</b><br>トークンの「Repository access」で <b>${REPO}</b> が選ばれているか確認してください。`;
     if (e.status === 409 || e.status === 422) return '<b>ほかの人が先に保存しました。</b><br>「元に戻す」で最新を読み込み、もう一度変更して保存してください。';
-    if (!e.status) return '<b>GitHub に接続できませんでした。</b><br>インターネット接続を確認して、もう一度お試しください。';
+    if (!e.status) return '<b>サーバーに接続できませんでした。</b><br>インターネット接続を確認して、もう一度お試しください。';
     return `<b>保存できませんでした（${e.status}）。</b><br>${esc(e.message)}`;
   }
 
@@ -171,6 +180,7 @@
   const TABS = {
     dash: '📊 ダッシュボード', vault: '🗂 アフィリエイト管理', line: '💬 LINE公式アカウント', member: '⭐ 有料会員', aff: '🔗 アフィリエイト（サービス別）',
     report: '📝 見直しレポート', recs: '📣 おすすめ枠', guides: '📰 お悩みガイド', site: '⚙️ 基本設定',
+    stats: '📈 アクセス数', members: '👥 メンバー',
   };
   const tabLabel = t => TABS[t].replace(/^\S+\s/, '');
 
@@ -417,16 +427,56 @@
         ${inputHTML('SITE.url', { label: '公開URL', hint: 'Xでシェアしたときに付くURLです' })}
       </div>`;
     },
+    stats() {
+      return `<div class="panel">
+        <h2>アクセス数</h2>
+        <p class="muted">公開サイトの表示回数・訪問者数（同じ人は1日1回まで）・流入元・押されたボタンです。日付は日本時間。個人を特定する情報は記録していません。</p>
+        <div class="seg" id="statDays">
+          ${[7, 30, 90].map(d => `<button type="button" data-days="${d}" class="${statDays === d ? 'on' : ''}">${d}日</button>`).join('')}
+        </div>
+        <div id="statBody"><p class="muted">読み込み中…</p></div>
+      </div>`;
+    },
+    members() {
+      const owner = me.role === 'owner';
+      return `<div class="panel">
+        <h2>メンバー</h2>
+        <p class="muted">管理画面にログインできる人です。ログイン中：<b>${esc(me.name)}</b>（ID：${esc(me.id)}・${owner ? 'オーナー' : 'メンバー'}）</p>
+        <div id="memberList">${owner ? '<p class="muted">読み込み中…</p>' : ''}</div>
+        ${owner ? `<h3>メンバーを追加</h3>
+          <div class="grid2">
+            <label class="field"><span>ログインID</span><input id="nmId" autocomplete="off" placeholder="半角英数字 3文字以上"></label>
+            <label class="field"><span>名前</span><input id="nmName" autocomplete="off" placeholder="例：山田"></label>
+            <label class="field"><span>最初のパスワード</span><input id="nmPw" type="text" autocomplete="off" placeholder="10文字以上"><small>本人に伝え、ログイン後に変えてもらってください</small></label>
+            <label class="field"><span>権限</span><select id="nmRole"><option value="member">メンバー（設定の編集・保存・アクセス数）</option><option value="owner">オーナー（メンバーの管理もできる）</option></select></label>
+          </div>
+          <button class="btn" id="nmAdd" type="button" style="margin-top:12px">追加する</button>` : ''}
+        <h3>自分のパスワードを変える</h3>
+        <div class="grid2">
+          <label class="field"><span>今のパスワード</span><input id="pwCur" type="password" autocomplete="current-password"></label>
+          <label class="field"><span>新しいパスワード（10文字以上）</span><input id="pwNew" type="password" autocomplete="new-password"></label>
+        </div>
+        <button class="btn ghost" id="pwSave" type="button" style="margin-top:12px">パスワードを変える</button>
+        ${owner ? `<h3>保存用の GitHub トークン</h3>
+          <p class="muted">設定を保存するとき、サーバーがこのトークンを使います（ブラウザには渡しません）。状態：<b class="${hasGithubToken ? 'ok' : 'ng'}">${hasGithubToken ? '登録済み' : '未登録'}</b><br>期限が切れたら、作り直して登録し直してください。</p>
+          <label class="field"><span>GitHub のトークン（github_pat_…）</span><input id="ghTok" type="password" autocomplete="off"></label>
+          <button class="btn ghost" id="ghSave" type="button" style="margin-top:12px">登録する</button>` : ''}
+      </div>`;
+    },
   };
+  let statDays = 30;
 
   function render() {
     $$('#nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
     $('#main').innerHTML = views[tab]();
     $('#siteLink').href = state.SITE.url || './';
+    $('#savebar').hidden = tab === 'stats' || tab === 'members';
     bindView();
   }
 
   function bindView() {
+    if (tab === 'stats') bindStats();
+    if (tab === 'members') bindMembers();
     if (tab === 'vault') renderVault($('#vaultRoot'), { gh, REPO, BRANCH, getState: () => state, toast, showError, explain, esc });
     const main = $('#main');
     $$('[data-path]', main).forEach(el => {
@@ -518,33 +568,152 @@
     clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('on'), 3200);
   }
 
+  // ---------- アクセス数 ----------
+  const num = n => Number(n || 0).toLocaleString('ja-JP');
+  const PAGE_NAMES = { '/': 'トップ（診断）', '/index.html': 'トップ（診断）', '/hacks.html': 'ライフハック78選' };
+  async function bindStats() {
+    $$('#statDays [data-days]').forEach(b => b.onclick = () => { statDays = +b.dataset.days; render(); });
+    const box = $('#statBody');
+    let d;
+    try { d = await api(`/stats?days=${statDays}`); } catch (e) { box.innerHTML = `<p class="err">${explain(e)}</p>`; return; }
+    if (tab !== 'stats') return;
+    const sum = k => d.series.reduce((a, r) => a + r[k], 0);
+    const todayRow = d.series[d.series.length - 1] || { pv: 0, uv: 0 };
+    const max = Math.max(1, ...d.series.map(r => r.pv));
+    const list = (rows, label, fmt = k => esc(k)) => rows.length
+      ? `<table class="tbl rank"><thead><tr><th>${label}</th><th class="n">回数</th></tr></thead><tbody>${rows.map(r => `<tr><td>${fmt(r.key)}</td><td class="n">${num(r.n)}</td></tr>`).join('')}</tbody></table>`
+      : '<p class="muted">まだデータがありません</p>';
+    box.innerHTML = `
+      <div class="stats">
+        <div class="stat"><small>今日の表示回数</small><b>${num(todayRow.pv)}</b></div>
+        <div class="stat"><small>今日の訪問者</small><b>${num(todayRow.uv)}</b></div>
+        <div class="stat"><small>${d.days}日間の表示回数</small><b>${num(sum('pv'))}</b></div>
+        <div class="stat"><small>${d.days}日間の訪問者（のべ）</small><b>${num(sum('uv'))}</b></div>
+      </div>
+      <div class="chart" role="img" aria-label="1日ごとの表示回数と訪問者">
+        ${d.series.map(r => `<div class="bar" title="${r.day}：表示 ${r.pv}・訪問者 ${r.uv}"><i style="height:${Math.round(r.pv / max * 100)}%"></i><s style="height:${Math.round(r.uv / max * 100)}%"></s></div>`).join('')}
+      </div>
+      <p class="muted chart-legend"><span class="lg pv"></span>表示回数　<span class="lg uv"></span>訪問者　（${esc(d.from)} 〜 ${esc(d.today)}）</p>
+      <div class="grid2 rank-grid">
+        <div><h3>よく見られたページ</h3>${list(d.pages, 'ページ', k => esc(PAGE_NAMES[k] || k))}</div>
+        <div><h3>どこから来たか</h3>${list(d.refs, '流入元')}</div>
+      </div>
+      <h3>押されたボタン・操作</h3>${list(d.events, '操作')}`;
+  }
+
+  // ---------- メンバー ----------
+  async function bindMembers() {
+    const listBox = $('#memberList');
+    const loadList = async () => {
+      if (me.role !== 'owner') return;
+      try {
+        const { users } = await api('/users');
+        if (tab !== 'members') return;
+        const t = v => (v ? new Date(v).toLocaleString('ja-JP') : '—');
+        listBox.innerHTML = `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>名前</th><th>ID</th><th>権限</th><th>最後のログイン</th><th></th></tr></thead><tbody>
+          ${users.map(u => `<tr><td>${esc(u.name)}</td><td>${esc(u.id)}</td><td>${u.role === 'owner' ? 'オーナー' : 'メンバー'}</td><td>${t(u.last_login)}</td>
+            <td style="white-space:nowrap">${u.id === me.id ? '<span class="muted">あなた</span>' : `<button class="btn sm ghost" data-reset="${esc(u.id)}" type="button">パスワード再設定</button> <button class="btn sm danger" data-deluser="${esc(u.id)}" type="button">削除</button>`}</td></tr>`).join('')}
+        </tbody></table></div>`;
+        $$('[data-deluser]', listBox).forEach(b => b.onclick = async () => {
+          if (!confirm(`${b.dataset.deluser} を削除しますか？ すぐにログインできなくなります`)) return;
+          try { await api(`/users/${encodeURIComponent(b.dataset.deluser)}`, { method: 'DELETE' }); toast('削除しました'); loadList(); } catch (e) { showError(explain(e)); }
+        });
+        $$('[data-reset]', listBox).forEach(b => b.onclick = async () => {
+          const pw = prompt(`${b.dataset.reset} の新しいパスワード（10文字以上）`);
+          if (!pw) return;
+          try { await api(`/users/${encodeURIComponent(b.dataset.reset)}/password`, { method: 'POST', body: { password: pw } }); toast('パスワードを変えました。本人に伝えてください'); } catch (e) { showError(explain(e)); }
+        });
+      } catch (e) { listBox.innerHTML = `<p class="err">${explain(e)}</p>`; }
+    };
+    loadList();
+    $('#nmAdd')?.addEventListener('click', async () => {
+      try {
+        await api('/users', { method: 'POST', body: { id: $('#nmId').value.trim(), name: $('#nmName').value.trim(), password: $('#nmPw').value, role: $('#nmRole').value } });
+        toast('追加しました。IDとパスワードを本人に伝えてください');
+        ['#nmId', '#nmName', '#nmPw'].forEach(q => { $(q).value = ''; });
+        loadList();
+      } catch (e) { showError(explain(e)); }
+    });
+    $('#pwSave').onclick = async () => {
+      try {
+        await api('/me/password', { method: 'POST', body: { current: $('#pwCur').value, next: $('#pwNew').value } });
+        toast('パスワードを変えました'); $('#pwCur').value = ''; $('#pwNew').value = '';
+      } catch (e) { showError(explain(e)); }
+    };
+    $('#ghSave')?.addEventListener('click', async () => {
+      const v = $('#ghTok').value.trim();
+      if (!v) { toast('トークンを入れてください'); return; }
+      try {
+        await api('/github-token', { method: 'POST', body: { githubToken: v } });
+        const first = !hasGithubToken;
+        hasGithubToken = true;
+        if (first) await loadSettings();
+        toast('登録しました'); render();
+      } catch (e) { showError(explain(e)); }
+    });
+  }
+
   // ---------- ログイン ----------
-  async function login(t, remember) {
-    token = t.trim();
+  function storeSession(remember) {
+    try { (remember ? localStorage : sessionStorage).setItem(SESSION_KEY, session); } catch { }
+  }
+  function clearSession() {
+    try { localStorage.removeItem(SESSION_KEY); sessionStorage.removeItem(SESSION_KEY); } catch { }
+  }
+  function sessionExpired() {
+    clearSession();
+    me = null; session = '';
+    $('#app').hidden = true; $('#login').hidden = false;
+    const err = $('#loginErr');
+    err.innerHTML = '<b>ログインの有効期限が切れました。</b>もう一度ログインしてください。';
+    err.hidden = false;
+  }
+  // ログイン後：自分の情報 → 設定の読み込み → 画面
+  async function enter() {
+    const info = await api('/me');
+    me = info.user; hasGithubToken = info.githubToken;
+    $('#meName').textContent = `${me.name}さん`;
+    $$('#nav [data-owner]').forEach(el => { el.hidden = me.role !== 'owner'; });
+    if (hasGithubToken) await loadSettings();
+    else { state = defaults(); saved = JSON.stringify(state); markDirty(); }
+    $('#login').hidden = true; $('#app').hidden = false;
+    if (!hasGithubToken) { tab = 'members'; render(); showError(explain({ code: 'no_github_token' })); return; }
+    render();
+  }
+  async function login(id, password, remember) {
     const err = $('#loginErr');
     err.hidden = true;
     try {
-      await gh(`/repos/${REPO}`);
-      // アカウントの権限ではなく、トークン自体で保存できるかを確かめる
-      if (!(await canWrite())) { const e = new Error('no write'); e.status = 403; throw e; }
-      await loadSettings();
-      try { (remember ? localStorage : sessionStorage).setItem(TOKEN_KEY, token); } catch { }
-      $('#login').hidden = true; $('#app').hidden = false;
-      render();
+      const r = await api('/auth/login', { method: 'POST', body: { id: id.trim(), password } });
+      session = r.token; storeSession(remember);
+      await enter();
     } catch (e) {
-      token = '';
-      err.innerHTML = explain(e);
-      err.hidden = false;
-      try { localStorage.removeItem(TOKEN_KEY); sessionStorage.removeItem(TOKEN_KEY); } catch { }
+      session = ''; clearSession();
+      err.innerHTML = explain(e); err.hidden = false;
+    }
+  }
+  async function setup() {
+    const err = $('#setupErr');
+    err.hidden = true;
+    try {
+      const r = await api('/auth/setup', { method: 'POST', body: { githubToken: $('#suToken').value.trim(), id: $('#suId').value.trim(), name: $('#suName').value.trim(), password: $('#suPw').value } });
+      session = r.token; storeSession(true);
+      $('#suToken').value = ''; $('#suPw').value = '';
+      await enter();
+      toast('オーナーとして登録しました。次からはIDとパスワードでログインできます');
+    } catch (e) {
+      session = '';
+      err.innerHTML = explain(e); err.hidden = false;
     }
   }
 
   $('#repoName1').textContent = REPO;
-  $('#btnLogin').onclick = () => login($('#token').value, $('#remember').checked);
-  $('#token').addEventListener('keydown', e => { if (e.key === 'Enter') $('#btnLogin').click(); });
+  $('#btnLogin').onclick = () => login($('#loginId').value, $('#loginPw').value, $('#remember').checked);
+  $('#loginPw').addEventListener('keydown', e => { if (e.key === 'Enter') $('#btnLogin').click(); });
+  $('#btnSetup').onclick = setup;
   $('#btnLogout').onclick = () => {
-    if (JSON.stringify(state) !== saved && !confirm('保存していない変更があります。ログアウトしますか？')) return;
-    try { localStorage.removeItem(TOKEN_KEY); sessionStorage.removeItem(TOKEN_KEY); } catch { }
+    if (state && JSON.stringify(state) !== saved && !confirm('保存していない変更があります。ログアウトしますか？')) return;
+    clearSession();
     location.reload();
   };
   $('#nav').addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if (b) { tab = b.dataset.tab; render(); } });
@@ -559,8 +728,12 @@
     if ((state && JSON.stringify(state) !== saved) || (vm && vm.data && JSON.stringify(vm.data) !== vm.saved)) e.preventDefault();
   });
 
-  // 保存済みトークンがあれば自動ログイン
+  // 前のログインが残っていれば、そのまま入る（古い GitHub トークンの保存は消す）
+  try { localStorage.removeItem('subhack.admin.token'); sessionStorage.removeItem('subhack.admin.token'); } catch { }
   let stored = '';
-  try { stored = localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY) || ''; } catch { }
-  if (stored) login(stored, !!localStorage.getItem(TOKEN_KEY));
+  try { stored = localStorage.getItem(SESSION_KEY) || sessionStorage.getItem(SESSION_KEY) || ''; } catch { }
+  if (stored) {
+    session = stored;
+    enter().catch(e => { session = ''; clearSession(); if (e.code !== 'session') { $('#loginErr').innerHTML = explain(e); $('#loginErr').hidden = false; } });
+  }
 })();

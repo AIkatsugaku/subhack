@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="admin.css?v=202611031542">
+<link rel="stylesheet" href="admin.css?v=202611061300">
 </head>
 <body>
 
@@ -17,22 +17,26 @@
   <div class="login-card">
     <p class="login-brand">サブハック <span>管理画面</span></p>
     <h1>本部ログイン</h1>
-    <p class="muted">GitHub のアクセストークンでログインします。トークンを持っている人だけが設定を保存できます。</p>
-    <label class="field"><span>アクセストークン</span>
-      <input id="token" type="password" placeholder="github_pat_…" autocomplete="off">
+    <p class="muted">オーナーから受け取ったIDとパスワードでログインします。</p>
+    <label class="field"><span>ログインID</span>
+      <input id="loginId" autocomplete="username" autocapitalize="off">
     </label>
-    <label class="check"><input type="checkbox" id="remember" checked> このブラウザに保存する</label>
+    <label class="field"><span>パスワード</span>
+      <input id="loginPw" type="password" autocomplete="current-password">
+    </label>
+    <label class="check"><input type="checkbox" id="remember" checked> このブラウザでログインしたままにする（12時間）</label>
     <button class="btn" id="btnLogin" type="button">ログイン</button>
     <p class="err" id="loginErr" hidden></p>
     <details class="help">
-      <summary>トークンの作り方</summary>
-      <ol>
-        <li>GitHub にログインし、<a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Fine-grained token の作成画面</a>を開く</li>
-        <li>「Repository access」で <b>Only select repositories</b> を選び、<b id="repoName1"></b> を選ぶ<br><span class="muted">※「Public repositories」のままだと読み取り専用になり、保存できません</span></li>
-        <li>「Permissions」の <b>Repositories</b> の箱で「＋ Add permissions」→ <b>Contents</b> を追加し、右側を <b>Read and write</b> にする<br><span class="muted">※「Account」の箱ではありません。追加直後は「Read-only」なので必ず切り替えてください</span></li>
-        <li>「Generate token」（作り直す場合は「Update」）を押し、トークン（github_pat_…）をここに貼り付ける</li>
-      </ol>
-      <p class="muted">本部のスタッフごとにトークンを分けておくと、誰が変更したか履歴でわかります。</p>
+      <summary>はじめての設定・オーナーの登録（GitHub のトークンが必要）</summary>
+      <p class="muted">リポジトリ <b id="repoName1"></b> に保存できる GitHub のトークンを持っている人が、オーナー（メンバーを追加できる人）としてIDとパスワードを作ります。トークンはサーバーに預けられ、以後の保存に使われます。</p>
+      <label class="field"><span>GitHub のトークン（github_pat_…）</span><input id="suToken" type="password" autocomplete="off"></label>
+      <label class="field"><span>ログインID（半角英数字 3文字以上）</span><input id="suId" autocomplete="off" autocapitalize="off"></label>
+      <label class="field"><span>名前</span><input id="suName" autocomplete="off"></label>
+      <label class="field"><span>パスワード（10文字以上）</span><input id="suPw" type="password" autocomplete="new-password"></label>
+      <button class="btn ghost" id="btnSetup" type="button">オーナーとして登録してログイン</button>
+      <p class="err" id="setupErr" hidden></p>
+      <p class="muted">トークンの作り方：<a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Fine-grained token の作成画面</a>で「Only select repositories」→ このリポジトリを選び、「Repositories」の権限で Contents を Read and write にする。</p>
     </details>
   </div>
 </section>
@@ -43,6 +47,7 @@
     <p class="top-brand">サブハック <span>管理画面</span></p>
     <div class="top-actions">
       <a class="link" id="siteLink" href="./" target="_blank" rel="noopener">公開サイトを見る ↗</a>
+      <span class="me" id="meName"></span>
       <button class="link" id="btnLogout" type="button">ログアウト</button>
     </div>
   </header>
@@ -50,6 +55,7 @@
   <div class="layout">
     <nav class="nav" id="nav">
       <button data-tab="dash" class="on" type="button">📊 ダッシュボード</button>
+      <button data-tab="stats" type="button">📈 アクセス数</button>
       <button data-tab="line" type="button">💬 LINE公式アカウント</button>
       <button data-tab="member" type="button">⭐ 有料会員</button>
       <button data-tab="vault" type="button">🗂 アフィリエイト管理（金庫）</button>
@@ -58,6 +64,7 @@
       <button data-tab="recs" type="button">📣 おすすめ枠</button>
       <button data-tab="guides" type="button">📰 お悩みガイド</button>
       <button data-tab="site" type="button">⚙️ 基本設定</button>
+      <button data-tab="members" type="button">👥 メンバー</button>
     </nav>
     <main class="main" id="main"></main>
   </div>
@@ -73,12 +80,12 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=202611031542"></script>
-<script src="data.js?v=202611031542"></script>
-<script src="icons.js?v=202611031542"></script>
-<script src="report-config.js?v=202611031542"></script>
-<script src="guides.js?v=202611031542"></script>
-<script src="admin-vault.js?v=202611031542"></script>
-<script src="admin.js?v=202611031542"></script>
+<script src="config.js?v=202611061300"></script>
+<script src="data.js?v=202611061300"></script>
+<script src="icons.js?v=202611061300"></script>
+<script src="report-config.js?v=202611061300"></script>
+<script src="guides.js?v=202611061300"></script>
+<script src="admin-vault.js?v=202611061300"></script>
+<script src="admin.js?v=202611061300"></script>
 </body>
 </html>

@@ -1,0 +1,14 @@
+{
+  // サブハックの管理画面ログイン・保存の中継・アクセス数の集計（obuchi@ のアカウント）
+  "name": "subhack-api",
+  "main": "src/index.js",
+  "compatibility_date": "2026-10-01",
+  "workers_dev": true,
+  "d1_databases": [
+    { "binding": "DB", "database_name": "subhack-db", "database_id": "2ce868cb-794e-4980-abe4-6859d67f41d8" }
+  ],
+  "vars": {
+    "REPO": "AIkatsugaku/subhack",
+    "ALLOWED_ORIGINS": "https://www.sabu-hack.com,https://sabu-hack.com,http://localhost:5179"
+  }
+}

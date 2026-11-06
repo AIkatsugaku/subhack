@@ -341,6 +341,7 @@
   function showCard() {
     if (!items.length) { toast('まずは使っているものを選んでください'); return; }
     renderResult();
+    window.subTrack?.('結果を見た');
     $('#result').hidden = false;
     $('#result').scrollTop = 0;
     document.body.style.overflow = 'hidden';
@@ -416,7 +417,7 @@
       u.searchParams.set('url', SITE.url);
       window.open(u.toString(), '_blank', 'noopener');
     };
-    $('#saveImg').onclick = saveImage;
+    $('#saveImg').onclick = () => { window.subTrack?.('画像で保存'); saveImage(); };
     $('#editList').onclick = () => { closeResult(); openList(); };
     $$('[data-goto]', $('#resultBody')).forEach(b => b.onclick = () => { closeResult(); jump(b.dataset.goto); });
     bindMember($('#resultBody'), { getItems: () => items, save, yen, SVC, toast });

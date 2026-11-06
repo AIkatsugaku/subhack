@@ -11,6 +11,14 @@ const SITE = {
 };
 
 /*
+ * サブハック API（Cloudflare Workers・obuchi@ のアカウント）
+ * 管理画面のログイン・保存の中継・アクセス数の集計に使います。ソースは worker/ フォルダ。
+ */
+const API = {
+  url: 'https://subhack-api.obuchi.workers.dev',
+};
+
+/*
  * LINE公式アカウント
  * - id: ベーシックID（@から始まるID。例: '@123abcde'）
  * - addFriendUrl: 友だち追加URL（例: 'https://lin.ee/xxxxxxx'）

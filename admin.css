@@ -149,3 +149,25 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
 .show-chk { width: 18px; height: 18px; accent-color: var(--accent); }
 .range { display: flex; align-items: center; gap: 4px; white-space: nowrap; font-size: 12px; color: var(--sub); }
 .range input { width: 90px; min-width: 70px; }
+
+/* ---------- ログイン中の名前・アクセス数・メンバー ---------- */
+.me { font-size: 12px; color: var(--sub); margin-right: 4px; }
+.seg { display: inline-flex; background: var(--soft); border-radius: 10px; padding: 3px; margin-top: 12px; }
+.seg button { padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 700; color: var(--sub); }
+.seg button.on { background: var(--card); color: var(--navy); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+.chart { display: flex; align-items: flex-end; gap: 2px; height: 160px; margin-top: 16px; padding: 8px 0 0; border-bottom: 1px solid var(--line); }
+.chart .bar { flex: 1; height: 100%; position: relative; min-width: 3px; }
+.chart .bar i, .chart .bar s { position: absolute; bottom: 0; left: 0; right: 0; border-radius: 3px 3px 0 0; }
+.chart .bar i { background: #BFE3DC; }
+.chart .bar s { background: var(--accent); left: 25%; right: 25%; }
+.chart-legend { margin-top: 6px; }
+.lg { display: inline-block; width: 10px; height: 10px; border-radius: 3px; vertical-align: -1px; margin-right: 4px; }
+.lg.pv { background: #BFE3DC; }
+.lg.uv { background: var(--accent); }
+.tbl.rank { width: 100%; }
+.tbl.rank td { padding: 7px 6px; font-size: 13px; }
+.tbl .n, .tbl.rank th.n { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.rank-grid { align-items: start; }
+.ok { color: var(--accent); }
+.ng { color: var(--pr); }
+@media (max-width: 720px) { .rank-grid { grid-template-columns: 1fr; } }
