@@ -159,7 +159,8 @@ function buildHackPanel({ items }) {
       <span class="hk-row-go">${hackCanRead(h) ? '読む ›' : '🔒'}</span>
     </button>`;
   // LINE登録を先にお願いする（合言葉で開く設定で、まだ開いていない人）
-  const askLine = !hackUnlocked() && hackCodeOn() && !hackShareOn();
+  // 友だち追加の案内は、結果画面のLINEの欄にまとめている（有料会員を出しているときだけここにも出す）
+  const askLine = !hackUnlocked() && hackCodeOn() && !hackShareOn() && typeof MEMBERSHIP !== 'undefined' && MEMBERSHIP.enabled === true;
   return `<div class="panel hk-panel">
       <h3>見るだけで面白いライフハック</h3>
       ${askLine ? `<div class="hk-line-cta">

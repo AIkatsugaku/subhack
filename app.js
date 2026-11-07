@@ -401,7 +401,7 @@
       </div>
 
       ${buildReport({ items, SVC, icoHTML, iconOf, yen, esc })}
-      ${buildMember({ items, SVC, yen, esc, icoHTML, iconOf })}
+      ${buildMember({ items, SVC, yen, esc, icoHTML, iconOf, st })}
       ${buildGuides({ st, esc })}
       ${buildHackPanel({ items })}
 

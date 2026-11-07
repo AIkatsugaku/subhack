@@ -136,10 +136,35 @@ function guideBodyHTML(text, esc) {
   return out.join('');
 }
 
-function buildGuides({ st, esc }) {
-  const list = GUIDES.filter(g => g.enabled !== false)
+function guideList(st) {
+  return GUIDES.filter(g => g.enabled !== false)
     .map(g => ({ g, pick: (() => { try { return g.when !== 'always' && GUIDE_RULES[g.when]?.when(st); } catch { return false; } })() }))
     .sort((a, b) => b.pick - a.pick);
+}
+// LINEの欄に入れる：悩みのチップ
+function guideTopicsHTML({ st, esc }) {
+  const list = guideList(st);
+  return list.length ? `<ul class="guide-topics">${list.map(({ g, pick }) => `<li class="${pick ? 'pick' : ''}"><span>${esc(g.emoji || '📄')}</span>${esc(g.title)}${pick ? '<em>あなたにおすすめ</em>' : ''}</li>`).join('')}</ul>` : '';
+}
+// LINEの欄に入れる：記事をサイトで読む（折りたたみ）
+function guideCardsHTML({ st, esc }) {
+  const list = guideList(st);
+  return list.length ? `<details class="guide-more">
+      <summary>悩みの記事をサイトで読む</summary>
+      <div class="guide-cards">
+        ${list.map(({ g, pick }) => `<button class="guide-card${pick ? ' pick' : ''}" data-guide="${esc(g.id)}" type="button">
+          <span class="guide-emoji">${esc(g.emoji || '📄')}</span>
+          <span class="guide-tx">${pick ? '<span class="guide-badge">あなたにおすすめ</span>' : ''}<b>${esc(g.title)}</b><small>${esc(g.lead || '')}</small></span>
+          <span class="guide-go">読む ›</span>
+        </button>`).join('')}
+      </div>
+    </details>` : '';
+}
+
+function buildGuides({ st, esc }) {
+  // 有料会員を出していない間は、LINEの欄（member.js）にまとめて出す
+  if (MEMBERSHIP.enabled !== true) return '';
+  const list = guideList(st);
   if (!list.length) return '';
   // 記事はLINEで配信するので、サイトでは「LINE登録で解決できる悩み」として見せ、記事本体は折りたたむ
   return `<div class="panel guides">

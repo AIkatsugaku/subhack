@@ -26,7 +26,7 @@ function remindLabel(r) {
   return String(r.date || '').replace(/-/g, '/');
 }
 
-function buildMember({ items, SVC, yen, esc, icoHTML, iconOf }) {
+function buildMember({ items, SVC, yen, esc, icoHTML, iconOf, st }) {
   const nameOf = i => i.label || i.name || (SVC[i.sid]?.n || '').replace(/\n/g, '');
   const rows = items.map(i => {
     const r = i.remind || {};
@@ -45,6 +45,38 @@ function buildMember({ items, SVC, yen, esc, icoHTML, iconOf }) {
   }).join('');
 
   const m = MEMBERSHIP;
+  const lineCard = LINE.icon || LINE.qr ? `<div class="line-card">
+        ${LINE.icon ? `<img class="line-icon" src="${esc(LINE.icon)}" alt="">` : ''}
+        <div class="line-info"><b>${esc(LINE.name || SITE.name + ' 公式LINE')}</b><small>${esc(LINE.id)}</small></div>
+        ${LINE.qr ? `<figure class="line-qr"><img src="${esc(LINE.qr)}" alt="友だち追加のQRコード"><figcaption>スマホで読み取り</figcaption></figure>` : ''}
+      </div>` : '';
+  // 有料会員を出していない間：通知・相談・悩み・ライフハックを1つの欄にまとめ、友だち追加のボタンは1つだけ
+  if (m.enabled !== true) {
+    const hacksN = typeof HACKS !== 'undefined' ? HACKS.length : 0;
+    return `
+    <div class="panel mb line-all" id="memberPanel">
+      <h3>📱 公式LINEに登録すると、できること</h3>
+      <p class="mb-lead">友だち追加（無料）だけで、ぜんぶ使えます。</p>
+      <ul class="line-perks">
+        <li><span>🔔</span><div><b>解約・見直しの時期をお知らせ</b><small>無料期間が終わる前・更新月にLINEで届きます</small></div></li>
+        <li><span>💬</span><div><b>気になることを気軽に相談</b><small>「どれを解約すればいい？」「もっと安くできる？」</small></div></li>
+        <li><span>🧩</span><div><b>こんな悩みも解決できます</b>${typeof guideTopicsHTML === 'function' ? guideTopicsHTML({ st, esc }) : ''}</div></li>
+        ${hacksN ? `<li><span>🔓</span><div><b>ライフハック${hacksN}選がぜんぶ読める</b><small>友だち追加で届く合言葉を入れるだけ</small></div></li>` : ''}
+      </ul>
+      ${lineCard}
+      <button class="btn line big" id="mbAdd" type="button">LINEで友だち追加（無料）</button>
+      <details class="mb-more">
+        <summary>🔔 通知してほしい予定を入れる</summary>
+        <p class="mb-lead">サービスごとに「解約したい日」か「見直したい月」を選んで、LINEに送ってください。</p>
+        <div class="mb-list">${rows}</div>
+        <p class="mb-count" id="mbCount"></p>
+        <button class="btn line" id="mbLine" type="button">この予定をLINEに送って通知をオンにする</button>
+        <button class="link-btn" id="mbCalendar" type="button">LINEを使わず、スマホのカレンダーに入れる</button>
+      </details>
+      ${typeof guideCardsHTML === 'function' ? guideCardsHTML({ st, esc }) : ''}
+      <button class="link-btn" id="mbConsult" type="button">友だち追加済みの方：いまの内容を添えてLINEで相談する</button>
+    </div>`;
+  }
   return `
     <div class="panel mb" id="memberPanel">
       <h3>🔔 LINE登録で、解約・見直しの時期をお知らせ</h3>
