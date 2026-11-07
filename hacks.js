@@ -161,7 +161,7 @@ function buildHackPanel({ items }) {
   // LINE登録を先にお願いする（合言葉で開く設定で、まだ開いていない人）
   const askLine = !hackUnlocked() && hackCodeOn() && !hackShareOn();
   return `<div class="panel hk-panel">
-      <h3>あなたに使えるライフハック</h3>
+      <h3>見るだけで面白いライフハック</h3>
       ${askLine ? `<div class="hk-line-cta">
         <p><b>LINE登録で${HACKS.length}件ぜんぶ読めます</b><small>友だち追加すると届く合言葉で、手順・注意点まで開きます（無料）</small></p>
         <button class="btn line" type="button" data-hk-line>LINEで友だち追加</button>
