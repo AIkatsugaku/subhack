@@ -340,6 +340,9 @@
 
   function showCard() {
     if (!items.length) { toast('まずは使っているものを選んでください'); return; }
+    askDemo(openResult);
+  }
+  function openResult() {
     renderResult();
     window.subTrack?.('結果を見た');
     $('#result').hidden = false;
@@ -386,7 +389,6 @@
         </div>
         <div class="summary-icons">${sorted.slice(0, 20).map(i => icoHTML(iconOf(i))).join('')}</div>
       </div>
-      ${demoAsk()}
       <div class="share-row">
         <button class="btn x" id="shareX" type="button">Xでシェア</button>
         <button class="btn" id="saveImg" type="button">画像で保存</button>
@@ -425,39 +427,45 @@
     bindReport($('#resultBody'), { items, yen });
     bindGuides($('#resultBody'), { openSheet, esc, yen });
     bindHackPanel($('#resultBody'), { openSheet, toast });
-    bindDemo($('#resultBody'));
   }
 
   // 性別・年代（任意）。一度答えるか閉じたら、このブラウザでは出さない
   const DEMO_KEY = 'subhack.demo';
-  function demoAsk() {
-    try { if (localStorage.getItem(DEMO_KEY)) return ''; } catch { return ''; }
+  function askDemo(next) {
+    let answered = '';
+    try { answered = localStorage.getItem(DEMO_KEY) || ''; } catch { answered = 'x'; }
+    if (answered) { next(); return; }
     const chips = (name, list) => list.map(v => `<button type="button" class="demo-chip" data-demo="${name}" data-v="${v}">${v}</button>`).join('');
-    return `<div class="demo" id="demoAsk">
-        <button class="demo-x" type="button" data-demo-close aria-label="閉じる">×</button>
-        <p class="demo-h">よければ教えてください<small>（任意・サイトの改善にだけ使います）</small></p>
+    const wrap = document.createElement('div');
+    wrap.className = 'demo-pop';
+    wrap.innerHTML = `<div class="demo" role="dialog" aria-modal="true" aria-labelledby="demoH">
+        <p class="demo-h" id="demoH">よければ教えてください<small>（任意・サイトの改善にだけ使います）</small></p>
         <div class="demo-row"><span>性別</span>${chips('sex', ['女性', '男性', 'その他・答えない'])}</div>
         <div class="demo-row"><span>年代</span>${chips('age', ['10代', '20代', '30代', '40代', '50代', '60代以上'])}</div>
+        <button class="btn" type="button" data-demo-go disabled>結果を見る</button>
+        <button class="demo-skip" type="button" data-demo-skip>答えずに結果を見る</button>
       </div>`;
-  }
-  function bindDemo(root) {
-    const box = root.querySelector('#demoAsk');
-    if (!box) return;
+    document.body.appendChild(wrap);
     const pick = {};
-    const done = () => {
+    const go = wrap.querySelector('[data-demo-go]');
+    const close = () => { wrap.remove(); next(); };
+    wrap.querySelectorAll('[data-demo]').forEach(btn => btn.onclick = () => {
+      pick[btn.dataset.demo] = btn.dataset.v;
+      wrap.querySelectorAll(`[data-demo="${btn.dataset.demo}"]`).forEach(x => x.classList.toggle('on', x === btn));
+      go.disabled = !(pick.sex || pick.age);
+      // 両方選んだら、そのまま結果へ
+      if (pick.sex && pick.age) setTimeout(go.onclick, 250);
+    });
+    go.onclick = () => {
+      if (!wrap.isConnected) return;
       try { localStorage.setItem(DEMO_KEY, '1'); } catch { }
       window.subTrackDemo?.(pick.sex, pick.age);
-      box.innerHTML = '<p class="demo-thanks">ありがとうございます！</p>';
-      setTimeout(() => box.remove(), 1500);
+      close();
     };
-    box.querySelectorAll('[data-demo]').forEach(b => b.onclick = () => {
-      pick[b.dataset.demo] = b.dataset.v;
-      box.querySelectorAll(`[data-demo="${b.dataset.demo}"]`).forEach(x => x.classList.toggle('on', x === b));
-      if (pick.sex && pick.age) done();
-    });
-    box.querySelector('[data-demo-close]').onclick = () => {
-      if (pick.sex || pick.age) done();
-      else { try { localStorage.setItem(DEMO_KEY, 'skip'); } catch { } box.remove(); }
+    wrap.querySelector('[data-demo-skip]').onclick = () => {
+      try { localStorage.setItem(DEMO_KEY, 'skip'); } catch { }
+      if (pick.sex || pick.age) window.subTrackDemo?.(pick.sex, pick.age);
+      close();
     };
   }
 
