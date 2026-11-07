@@ -399,9 +399,9 @@
       </div>
 
       ${buildReport({ items, SVC, icoHTML, iconOf, yen, esc })}
-      ${buildHackPanel({ items })}
-      ${buildGuides({ st, esc })}
       ${buildMember({ items, SVC, yen, esc, icoHTML, iconOf })}
+      ${buildGuides({ st, esc })}
+      ${buildHackPanel({ items })}
 
       ${recs.length ? `<div class="panel">
         <h3>見直しで安くなるかも<span class="pr-mini">※PRを含みます</span></h3>
