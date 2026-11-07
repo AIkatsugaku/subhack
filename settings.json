@@ -13,6 +13,7 @@
     "icon": "images/line-icon.png?v=1793615613447"
   },
   "MEMBERSHIP": {
+    "enabled": false,
     "name": "サブハック プレミアム",
     "price": 400,
     "features": [

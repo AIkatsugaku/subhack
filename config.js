@@ -46,6 +46,7 @@ const LINE = {
  * - joinUrl: 申し込み先（Stripe の決済リンクなど）。空なら LINE で申し込みメッセージを送る形になります。
  */
 const MEMBERSHIP = {
+  enabled: false,   // false の間は有料会員の案内を出さず、公式LINE（無料）に案内する
   name: 'サブハック プレミアム',
   price: 400,
   features: [

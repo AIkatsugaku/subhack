@@ -66,7 +66,12 @@ function buildMember({ items, SVC, yen, esc, icoHTML, iconOf }) {
       <button class="link-btn" id="mbCalendar" type="button">LINEを使わず、スマホのカレンダーに入れる</button>
     </div>
 
-    <div class="panel consult">
+    ${m.enabled !== true ? `<div class="panel consult">
+      <h3>💬 気になることは、公式LINEで相談</h3>
+      <p class="mb-lead">「どれを解約すればいい？」「もっと安くできる？」を、サブハック公式LINEで気軽に聞けます（無料）。</p>
+      <button class="btn line big" id="mbFreeAdd" type="button">公式LINEを友だち追加（無料）</button>
+      <button class="link-btn" id="mbConsult" type="button">友だち追加済みの方：いまの内容を添えてLINEで相談する</button>
+    </div>` : `<div class="panel consult">
       <h3>💬 いつでも、何度でもLINEで相談</h3>
       <p class="mb-lead">「どれを解約すればいい？」「もっと安くできる？」を、気になったときにすぐLINEで聞けます。</p>
       <div class="premium">
@@ -76,7 +81,7 @@ function buildMember({ items, SVC, yen, esc, icoHTML, iconOf }) {
         <button class="btn pr big" id="mbJoin" type="button">月額¥${yen(m.price)}で相談し放題にする</button>
       </div>
       <button class="link-btn" id="mbConsult" type="button">会員の方：いまの内容を添えてLINEで相談する</button>
-    </div>`;
+    </div>`}`;
 }
 
 function bindMember(root, { getItems, save, yen, SVC, toast }) {
@@ -175,7 +180,7 @@ function bindMember(root, { getItems, save, yen, SVC, toast }) {
     const list = [...getItems()].sort((a, b) => b.price - a.price);
     const total = list.reduce((a, b) => a + b.price, 0);
     const text = [
-      '【会員相談】',
+      MEMBERSHIP.enabled === true ? '【会員相談】' : '【相談】',
       `いまのサブスク・固定費：${list.length}件 月¥${yen(total)}`,
       ...list.slice(0, 20).map(i => `・${nameOf(i)}　¥${yen(i.price)}`),
       list.length > 20 ? `ほか${list.length - 20}件` : '',
@@ -186,7 +191,9 @@ function bindMember(root, { getItems, save, yen, SVC, toast }) {
   };
 
   // 有料会員
-  root.querySelector('#mbJoin').onclick = () => {
+  root.querySelector('#mbFreeAdd')?.addEventListener('click', () => root.querySelector('#mbAdd').click());
+  const join = root.querySelector('#mbJoin');
+  if (join) join.onclick = () => {
     if (MEMBERSHIP.joinUrl) return openUrl(MEMBERSHIP.joinUrl);
     sendLine(`【有料会員の申し込み】\n${MEMBERSHIP.name}（月額¥${yen(MEMBERSHIP.price)}）に申し込みたいです。`);
   };

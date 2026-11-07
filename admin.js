@@ -287,6 +287,8 @@
     member() {
       return `<div class="panel">
         <h2>有料会員</h2>
+        <label class="switch" style="margin:8px 0 4px"><input type="checkbox" data-path="MEMBERSHIP.enabled" data-type="bool"${state.MEMBERSHIP.enabled === true ? ' checked' : ''}> 有料会員の案内をサイトに出す</label>
+        <p class="muted">オフの間は、結果画面やお悩みガイドで有料会員の代わりに「公式LINEを友だち追加（無料）」を案内します。下の内容は残しておけます。</p>
         <div class="grid2">
           ${inputHTML('MEMBERSHIP.name', { label: 'プラン名' })}
           ${inputHTML('MEMBERSHIP.price', { label: '月額（円・税込）', type: 'num' })}

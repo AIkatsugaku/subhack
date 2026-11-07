@@ -178,12 +178,15 @@ function bindGuides(root, { openSheet, esc, yen }) {
         ${links.length ? `<div class="guide-links"><p class="guide-links-h">ここから申し込めます${links.some(isAff) ? '<span class="pr-mini">※PRを含みます</span>' : ''}</p>
           ${links.map(l => `<a class="guide-link" href="${esc(l.url)}" target="_blank" rel="${isAff(l) ? 'sponsored ' : ''}noopener">
             <span><b>${esc(l.name)}</b><small>${esc(l.desc || '')}</small></span>${isAff(l) ? '' : '<em>公式</em>'}</a>`).join('')}</div>` : ''}
-        ${g.line !== false ? `<div class="guide-line">
+        ${g.line !== false ? (MEMBERSHIP.enabled === true ? `<div class="guide-line">
           <p><b>ひとりで決めるのが不安なら</b>　LINEでいつでも何度でも相談できます（${esc(MEMBERSHIP.name)}・月額¥${yen(MEMBERSHIP.price)}）</p>
           <button class="btn line" type="button" data-guide-line>LINEで相談する（月額¥${yen(MEMBERSHIP.price)}）</button>
-        </div>` : ''}
+        </div>` : `<div class="guide-line">
+          <p><b>ひとりで決めるのが不安なら</b>　サブハック公式LINEで気軽に相談できます（無料）</p>
+          <button class="btn line" type="button" data-guide-line>公式LINEを友だち追加して相談する</button>
+        </div>`) : ''}
       </article>`);
     // 有料会員の申し込みボタンと同じ動きにする
-    document.querySelector('[data-guide-line]')?.addEventListener('click', () => root.querySelector('#mbJoin')?.click());
+    document.querySelector('[data-guide-line]')?.addEventListener('click', () => (MEMBERSHIP.enabled === true ? root.querySelector('#mbJoin') : root.querySelector('#mbAdd'))?.click());
   });
 }
