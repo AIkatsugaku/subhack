@@ -5,7 +5,7 @@
  */
 const SITE = {
   name: 'サブハック',
-  url: 'https://www.sabu-hack.com/',      // 公開URL（シェア用）
+  url: 'https://www.sabu-hack.com/subsc/',      // 公開URL（シェア用）
   hashtag: 'サブハック',        // シェア時のハッシュタグ
   xAccount: '',                        // 例: 'your_account'（リクエスト用リンクに使用）
 };

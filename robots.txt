@@ -1,32 +1,32 @@
 User-agent: *
 Allow: /
-Disallow: /admin.html
-Disallow: /worker/
-Disallow: /tools/
+Disallow: /subsc/admin.html
+Disallow: /subsc/worker/
+Disallow: /subsc/tools/
 
 # AI の検索・回答で紹介してもらえるよう、主な AI のクローラーにも公開しています
 User-agent: GPTBot
 Allow: /
-Disallow: /admin.html
+Disallow: /subsc/admin.html
 
 User-agent: OAI-SearchBot
 Allow: /
-Disallow: /admin.html
+Disallow: /subsc/admin.html
 
 User-agent: ChatGPT-User
 Allow: /
 
 User-agent: ClaudeBot
 Allow: /
-Disallow: /admin.html
+Disallow: /subsc/admin.html
 
 User-agent: Claude-SearchBot
 Allow: /
-Disallow: /admin.html
+Disallow: /subsc/admin.html
 
 User-agent: PerplexityBot
 Allow: /
-Disallow: /admin.html
+Disallow: /subsc/admin.html
 
 User-agent: Google-Extended
 Allow: /
@@ -34,4 +34,4 @@ Allow: /
 User-agent: Applebot-Extended
 Allow: /
 
-Sitemap: https://www.sabu-hack.com/sitemap.xml
+Sitemap: https://www.sabu-hack.com/subsc/sitemap.xml

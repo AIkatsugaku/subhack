@@ -12,7 +12,7 @@ const path = require('path');
 const vm = require('vm');
 
 const ROOT = path.join(__dirname, '..');
-const BASE = 'https://www.sabu-hack.com/';
+const BASE = 'https://www.sabu-hack.com/subsc/';
 const now = new Date(Date.now() + 9 * 3600e3);
 const TODAY = now.toISOString().slice(0, 10);
 const MONTH = `${now.getUTCFullYear()}年${now.getUTCMonth() + 1}月`;

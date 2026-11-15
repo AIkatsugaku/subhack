@@ -8,5 +8,5 @@ const KEY = '3dd684ca51f0f02b0b1cab3da9ae7fab';
 fetch('https://api.indexnow.org/indexnow', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json; charset=utf-8' },
-  body: JSON.stringify({ host: 'www.sabu-hack.com', key: KEY, keyLocation: `https://www.sabu-hack.com/${KEY}.txt`, urlList: urls }),
+  body: JSON.stringify({ host: 'www.sabu-hack.com', key: KEY, keyLocation: `https://www.sabu-hack.com/subsc/${KEY}.txt`, urlList: urls }),
 }).then(r => console.log('IndexNow:', r.status, r.status === 200 || r.status === 202 ? '受け付けられました' : ''));

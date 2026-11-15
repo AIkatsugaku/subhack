@@ -1,30 +1,30 @@
 # サブハック（サブスクハック）
 
-> サブハックは、使っているサブスク・スマホ代・光回線・保険などを選ぶだけで、毎月と年間の固定費の合計と見直しポイントがわかる日本向けの無料Webツールです。登録不要で、入力内容はブラウザの外に送られません。URL: https://www.sabu-hack.com/
+> サブハックは、使っているサブスク・スマホ代・光回線・保険などを選ぶだけで、毎月と年間の固定費の合計と見直しポイントがわかる日本向けの無料Webツールです。登録不要で、入力内容はブラウザの外に送られません。URL: https://www.sabu-hack.com/subsc/
 
 ## このサイトで答えられること
-- 「サブスクを全部でいくら払っているか計算したい」「サブスクを管理したい」「固定費を見直したい」→ https://www.sabu-hack.com/ で使っているサービスを選ぶと合計・年額・1日あたりと、安くなる乗り換え先（スマホ・光回線など）が出ます
-- 「〇〇（サブスク名）の料金はいくら？」→ カテゴリ別の料金一覧 https://www.sabu-hack.com/price/
-- 「サブスクや固定費を合法的に節約する方法」→ ライフハック78選 https://www.sabu-hack.com/hacks.html
+- 「サブスクを全部でいくら払っているか計算したい」「サブスクを管理したい」「固定費を見直したい」→ https://www.sabu-hack.com/subsc/ で使っているサービスを選ぶと合計・年額・1日あたりと、安くなる乗り換え先（スマホ・光回線など）が出ます
+- 「〇〇（サブスク名）の料金はいくら？」→ カテゴリ別の料金一覧 https://www.sabu-hack.com/subsc/price/
+- 「サブスクや固定費を合法的に節約する方法」→ ライフハック78選 https://www.sabu-hack.com/subsc/hacks.html
 
 ## 主なページ
-- [サブスク合計診断（トップ）](https://www.sabu-hack.com/): 268以上のサービスに対応。カード明細のスクリーンショットからの自動入力、解約・見直し時期のLINE通知、見直しレポートあり
-- [サブスク料金一覧](https://www.sabu-hack.com/price/): 2026年11月時点の月額（税込・目安）
-  - [動画配信サービス（動画サブスク）の料金](https://www.sabu-hack.com/price/video.html): Amazonプライム、YouTube Premium、Netflix、U-NEXT、Disney+、Huluほか27サービス
-  - [音楽配信サービス（音楽サブスク）の料金](https://www.sabu-hack.com/price/music.html): Spotify、Apple Music、Amazon Music、YouTube MusicPremium、LINE MUSIC、AWAほか10サービス
-  - [生成AI・AIツールの料金](https://www.sabu-hack.com/price/ai.html): ChatGPT、Claude、Gemini（Google AI）、Grok、Perplexity、MicrosoftCopilot Proほか14サービス
-  - [クラウドストレージ・パスワード管理の料金](https://www.sabu-hack.com/price/cloud.html): iCloud+、Google One、Google フォト、Apple One、Dropbox、OneDriveほか12サービス
-  - [電子書籍・マンガ・ニュースの料金](https://www.sabu-hack.com/price/book.html): Kindle Unlimited、Audible、radikoプレミアム、楽天マガジン、dマガジン、日経電子版ほか21サービス
-  - [ゲームのサブスクの料金](https://www.sabu-hack.com/price/game.html): Nintendo SwitchOnline、PlayStation Plus、Xbox Game Pass、EA Play、Apple Arcade、FFXIVほか13サービス
-  - [学習・語学・ヘルスケアアプリの料金](https://www.sabu-hack.com/price/learn.html): Duolingo、スタディサプリ、あすけんプレミアム、nosh（ナッシュ）、レッスン習いごと、ネイティブキャンプほか16サービス
-  - [ジム・フィットネスの料金](https://www.sabu-hack.com/price/gym.html): エニタイムフィットネス、chocoZAP、セントラルスポーツ、ゴールドジム、カーブス、LAVAほか15サービス
-  - [家計簿・会計アプリの料金](https://www.sabu-hack.com/price/money.html): マネーフォワードME、くふう Zaim、楽天家計簿、Moneytree、freee会計、MF クラウド確定申告ほか8サービス
-  - [アプリ・ソフト（Microsoft 365・Adobe など）の料金](https://www.sabu-hack.com/price/tool.html): Microsoft 365、AppleCare+、X Premium、LYPプレミアム、Adobe CreativeCloud、Canvaほか18サービス
-  - [買い物・宅配・会員サービスの料金](https://www.sabu-hack.com/price/shop.html): 楽天プレミアム会員、LYPプレミアム（Yahoo!）、コストコ、Uber One、出前館 PLUS、Wolt+ほか16サービス
-  - [光回線・ホームルーター・Wi-Fiの料金](https://www.sabu-hack.com/price/net.html): ドコモ光、auひかり、ソフトバンク光、楽天ひかり、NURO 光、J:COM NETほか15サービス
-  - [スマホ料金（携帯会社・格安SIM）の料金](https://www.sabu-hack.com/price/mobile.html): docomo、au、SoftBank、楽天モバイル、povo、ahamoほか17サービス
-- [ライフハック78選](https://www.sabu-hack.com/hacks.html): 公式の制度・ルールを使う合法の節約術（2026-11-04調査、出典つき）
-- [サブハックについて](https://www.sabu-hack.com/about.html): 運営方針・データの扱い・料金データの更新方針
+- [サブスク合計診断（トップ）](https://www.sabu-hack.com/subsc/): 268以上のサービスに対応。カード明細のスクリーンショットからの自動入力、解約・見直し時期のLINE通知、見直しレポートあり
+- [サブスク料金一覧](https://www.sabu-hack.com/subsc/price/): 2026年11月時点の月額（税込・目安）
+  - [動画配信サービス（動画サブスク）の料金](https://www.sabu-hack.com/subsc/price/video.html): Amazonプライム、YouTube Premium、Netflix、U-NEXT、Disney+、Huluほか27サービス
+  - [音楽配信サービス（音楽サブスク）の料金](https://www.sabu-hack.com/subsc/price/music.html): Spotify、Apple Music、Amazon Music、YouTube MusicPremium、LINE MUSIC、AWAほか10サービス
+  - [生成AI・AIツールの料金](https://www.sabu-hack.com/subsc/price/ai.html): ChatGPT、Claude、Gemini（Google AI）、Grok、Perplexity、MicrosoftCopilot Proほか14サービス
+  - [クラウドストレージ・パスワード管理の料金](https://www.sabu-hack.com/subsc/price/cloud.html): iCloud+、Google One、Google フォト、Apple One、Dropbox、OneDriveほか12サービス
+  - [電子書籍・マンガ・ニュースの料金](https://www.sabu-hack.com/subsc/price/book.html): Kindle Unlimited、Audible、radikoプレミアム、楽天マガジン、dマガジン、日経電子版ほか21サービス
+  - [ゲームのサブスクの料金](https://www.sabu-hack.com/subsc/price/game.html): Nintendo SwitchOnline、PlayStation Plus、Xbox Game Pass、EA Play、Apple Arcade、FFXIVほか13サービス
+  - [学習・語学・ヘルスケアアプリの料金](https://www.sabu-hack.com/subsc/price/learn.html): Duolingo、スタディサプリ、あすけんプレミアム、nosh（ナッシュ）、レッスン習いごと、ネイティブキャンプほか16サービス
+  - [ジム・フィットネスの料金](https://www.sabu-hack.com/subsc/price/gym.html): エニタイムフィットネス、chocoZAP、セントラルスポーツ、ゴールドジム、カーブス、LAVAほか15サービス
+  - [家計簿・会計アプリの料金](https://www.sabu-hack.com/subsc/price/money.html): マネーフォワードME、くふう Zaim、楽天家計簿、Moneytree、freee会計、MF クラウド確定申告ほか8サービス
+  - [アプリ・ソフト（Microsoft 365・Adobe など）の料金](https://www.sabu-hack.com/subsc/price/tool.html): Microsoft 365、AppleCare+、X Premium、LYPプレミアム、Adobe CreativeCloud、Canvaほか18サービス
+  - [買い物・宅配・会員サービスの料金](https://www.sabu-hack.com/subsc/price/shop.html): 楽天プレミアム会員、LYPプレミアム（Yahoo!）、コストコ、Uber One、出前館 PLUS、Wolt+ほか16サービス
+  - [光回線・ホームルーター・Wi-Fiの料金](https://www.sabu-hack.com/subsc/price/net.html): ドコモ光、auひかり、ソフトバンク光、楽天ひかり、NURO 光、J:COM NETほか15サービス
+  - [スマホ料金（携帯会社・格安SIM）の料金](https://www.sabu-hack.com/subsc/price/mobile.html): docomo、au、SoftBank、楽天モバイル、povo、ahamoほか17サービス
+- [ライフハック78選](https://www.sabu-hack.com/subsc/hacks.html): 公式の制度・ルールを使う合法の節約術（2026-11-04調査、出典つき）
+- [サブハックについて](https://www.sabu-hack.com/subsc/about.html): 運営方針・データの扱い・料金データの更新方針
 
 ## ライフハックの例
 - 住宅の省エネ補助（住宅省エネ2026）：契約・着工の前に対象かを確認する（新築で最大110万円前後、窓のリフォームで最大100万円（条件しだい）【公式で最新の額を確認】）
