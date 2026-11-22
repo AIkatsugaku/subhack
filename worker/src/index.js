@@ -187,6 +187,26 @@ async function handle(req, env, url) {
     return json({ ok: true });
   }
 
+  // 金庫：暗号化されたままサーバーに預かる（ログインした人だけ。中身はサーバーでも読めない）
+  if (path === '/vault' && req.method === 'GET') {
+    const raw = await getConfig(env, 'vault');
+    return raw ? json(JSON.parse(raw)) : json({ file: null, ver: 0 });
+  }
+  if (path === '/vault' && req.method === 'POST') {
+    const x = body.file, b64 = /^[A-Za-z0-9+/]+={0,2}$/;
+    if (!x || x.v !== 1 || x.kdf !== 'PBKDF2-SHA256' || !Number.isInteger(x.iter) || x.iter < 100000 || x.iter > 5000000
+      || !b64.test(String(x.salt)) || !b64.test(String(x.iv)) || !b64.test(String(x.data))) return fail(400, 'bad_input', '金庫の形が正しくありません');
+    const clean = { v: 1, kdf: x.kdf, iter: x.iter, salt: x.salt, iv: x.iv, data: x.data };
+    if (JSON.stringify(clean).length > 900000) return fail(413, 'too_large', '金庫が大きすぎます');
+    const cur = JSON.parse((await getConfig(env, 'vault')) || '{"ver":0}');
+    if (Number(body.ver) !== cur.ver) return fail(409, 'conflict', 'ほかの人が先に金庫を更新しました。開き直してください');
+    const ver = cur.ver + 1;
+    const r = await env.DB.prepare('INSERT INTO config (k, v) VALUES (?, ?) ON CONFLICT(k) DO UPDATE SET v = excluded.v WHERE json_extract(config.v, \'$.ver\') = ?')
+      .bind('vault', JSON.stringify({ file: clean, ver }), cur.ver).run();
+    if (!r.meta.changes) return fail(409, 'conflict', 'ほかの人が先に金庫を更新しました。開き直してください');
+    return json({ ok: true, ver });
+  }
+
   // 保存の中継（このリポジトリへの操作だけ）
   if (path === '/gh' && req.method === 'POST') {
     const gt = await getConfig(env, 'github_token');
@@ -194,8 +214,10 @@ async function handle(req, env, url) {
     const p = String(body.path || '');
     const method = String(body.method || 'GET').toUpperCase();
     const prefix = `/repos/${env.REPO}`;
-    if (!(p === prefix || p.startsWith(prefix + '/') || p.startsWith(prefix + '?')) || p.includes('..')) return fail(400, 'bad_path', 'この操作はできません');
-    if (!['GET', 'PUT', 'POST'].includes(method)) return fail(400, 'bad_method', 'この操作はできません');
+    // 読み書きできるのは、設定・LINE画像の3ファイルだけ
+    const rest = p.startsWith(prefix + '/contents/') ? p.slice((prefix + '/contents/').length) : '';
+    if (p.includes('%') || p.includes('..') || !/^(settings\.json|images\/line-icon\.png|images\/line-qr\.png)(\?ref=[A-Za-z0-9._-]+)?$/.test(rest)) return fail(400, 'bad_path', 'この操作はできません');
+    if (!['GET', 'PUT'].includes(method)) return fail(400, 'bad_method', 'この操作はできません');
     let payload = body.body;
     // 履歴で「誰が変更したか」が分かるよう、コミットの説明に名前を付ける
     if (payload && typeof payload.message === 'string') payload = { ...payload, message: `${payload.message}（${me.name}）` };
@@ -341,6 +363,11 @@ async function stats(env, url) {
 
 export default {
   async fetch(req, env) {
+    if (req.method === "POST" && env.RATE && !/webhook/i.test(new URL(req.url).pathname)) {
+      const who = req.headers.get("cf-connecting-ip") || "x", gatePath = new URL(req.url).pathname, isLogin = /login/i.test(gatePath) || (!gatePath.includes("/admin/") && (/signup|contact|inquiry|forgot|register|reset|apply/i.test(gatePath) || gatePath.endsWith("/requests")));
+      const gate = isLogin && env.RATE_LOGIN ? env.RATE_LOGIN : env.RATE;
+      if (!(await gate.limit({ key: who })).success) return new Response(JSON.stringify({ error: "続けて送信されたため、少し待ってからお試しください" }), { status: 429, headers: { "content-type": "application/json; charset=utf-8", "retry-after": "60" } });
+    }
     const url = new URL(req.url);
     const cors = corsHeaders(env, req);
     if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });

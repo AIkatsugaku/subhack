@@ -481,7 +481,7 @@
   function bindView() {
     if (tab === 'stats') bindStats();
     if (tab === 'members') bindMembers();
-    if (tab === 'vault') renderVault($('#vaultRoot'), { gh, REPO, BRANCH, getState: () => state, toast, showError, explain, esc });
+    if (tab === 'vault') renderVault($('#vaultRoot'), { api, getState: () => state, toast, showError, explain, esc });
     const main = $('#main');
     $$('[data-path]', main).forEach(el => {
       el.addEventListener(el.tagName === 'SELECT' || el.type === 'checkbox' ? 'change' : 'input', () => {

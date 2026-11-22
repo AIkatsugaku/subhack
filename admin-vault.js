@@ -1,10 +1,9 @@
 /*
  * 管理画面「アフィリエイト管理（金庫）」
- * ASPのログイン情報と、登録しているアフィリエイト案件の一覧を、金庫のパスワードで暗号化して vault.json に保存します。
- * リポジトリは公開なので、暗号化前の内容はどこにも保存しません（ブラウザのメモリの中だけ）。
+ * ASPのログイン情報と、登録しているアフィリエイト案件の一覧を、金庫のパスワードで暗号化してサーバーに保存します。
+ * 暗号化前の内容はどこにも保存しません（ブラウザのメモリの中だけ）。
  *   暗号化：PBKDF2-SHA256（60万回）で鍵を作り、AES-256-GCM で暗号化
  */
-const VAULT_FILE = 'vault.json';
 const VAULT_ITER = 600000;
 const VAULT_MIN_PASS = 12;
 const VAULT_IDLE_MS = 10 * 60 * 1000;   // 10分操作がなければロック
@@ -60,35 +59,25 @@ function aspFromUrl(url) {
 }
 
 // ---------- 画面 ----------
-// ctx: { gh, REPO, BRANCH, getState, toast, showError, explain, esc }
+// ctx: { api, getState, toast, showError, explain, esc }
 function renderVault(root, ctx) {
-  const { gh, REPO, BRANCH, getState, toast, showError, explain, esc } = ctx;
-  const V = renderVault.mem || (renderVault.mem = { file: null, sha: null, data: null, pass: null, saved: '', timer: null, loaded: false });
+  const { api, getState, toast, showError, explain, esc } = ctx;
+  const V = renderVault.mem || (renderVault.mem = { file: null, ver: 0, data: null, pass: null, saved: '', timer: null, loaded: false });
 
   const lock = () => { V.data = null; V.pass = null; clearTimeout(V.timer); draw(); };
   const touch = () => { clearTimeout(V.timer); if (V.data) V.timer = setTimeout(() => { lock(); toast('10分間操作がなかったので金庫をロックしました'); }, VAULT_IDLE_MS); };
   const dirty = () => V.data && JSON.stringify(V.data) !== V.saved;
 
   async function load() {
-    try {
-      const f = await gh(`/repos/${REPO}/contents/${VAULT_FILE}?ref=${BRANCH}`);
-      V.sha = f.sha;
-      V.file = JSON.parse(decodeURIComponent(escape(atob(f.content.replace(/\n/g, '')))));
-    } catch (e) {
-      if (e.status !== 404) throw e;
-      V.sha = null; V.file = null;
-    }
+    const r = await api('/vault');
+    V.ver = r.ver || 0; V.file = r.file || null;
     V.loaded = true;
   }
 
   async function persist(pass) {
     const file = await vaultEncrypt(V.data, pass);
-    const body = JSON.stringify(file, null, 2) + '\n';
-    const res = await gh(`/repos/${REPO}/contents/${VAULT_FILE}`, {
-      method: 'PUT',
-      body: JSON.stringify({ message: '管理画面からアフィリエイト管理（暗号化）を更新', content: btoa(body), branch: BRANCH, ...(V.sha ? { sha: V.sha } : {}) }),
-    });
-    V.sha = res.content.sha; V.file = file; V.pass = pass; V.saved = JSON.stringify(V.data);
+    const res = await api('/vault', { method: 'POST', body: { file, ver: V.ver } });
+    V.ver = res.ver; V.file = file; V.pass = pass; V.saved = JSON.stringify(V.data);
   }
 
   function draw() {
@@ -102,7 +91,7 @@ function renderVault(root, ctx) {
     root.innerHTML = `<div class="panel vault">
       <h2>🗂 アフィリエイト管理（金庫）</h2>
       <p class="muted">ASPのログイン情報と、登録しているアフィリエイト案件をまとめて管理します。中身は「金庫のパスワード」で暗号化して保存され、パスワードを入れないと誰も読めません。</p>
-      <div class="vault-warn">⚠️ このサイトのリポジトリは公開されています。暗号化しているので中身は読めませんが、推測されにくい<b>${VAULT_MIN_PASS}文字以上</b>のパスワードにしてください。<b>パスワードを忘れると中身は戻せません。</b>GitHubのトークンとは別のものにしてください。</div>
+      <div class="vault-warn">⚠️ 中身は暗号化してサーバーに保存します。推測されにくい<b>${VAULT_MIN_PASS}文字以上</b>のパスワードにしてください。<b>パスワードを忘れると中身は戻せません。</b>GitHubのトークンとは別のものにしてください。</div>
       <div class="grid2">
         <label class="field"><span>金庫のパスワード</span><input type="password" id="vNew1" autocomplete="new-password"></label>
         <label class="field"><span>もう一度</span><input type="password" id="vNew2" autocomplete="new-password"></label>
