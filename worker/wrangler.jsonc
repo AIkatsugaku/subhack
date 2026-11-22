@@ -2,6 +2,7 @@
   // サブハックの管理画面ログイン・保存の中継・アクセス数の集計（obuchi@ のアカウント）
   "name": "subhack-api",
   "main": "src/index.js",
+  "ratelimits": [{ "name": "RATE", "namespace_id": "3115", "simple": { "limit": 120, "period": 60 } }, { "name": "RATE_LOGIN", "namespace_id": "3116", "simple": { "limit": 10, "period": 60 } }],
   "compatibility_date": "2026-10-01",
   "workers_dev": true,
   "d1_databases": [
